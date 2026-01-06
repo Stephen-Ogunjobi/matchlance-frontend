@@ -1,7 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import apiClient from "../utils/api";
 import { useUser } from "../contexts/UserContext";
+import {
+  initializeSocketConnection,
+  joinConversation,
+  leaveConversation,
+  onNewMessage,
+  sendTypingIndicator,
+  onUserTyping,
+  disconnectSocket,
+} from "../utils/socket";
 
 interface Sender {
   _id: string;
@@ -12,7 +21,7 @@ interface Sender {
 
 interface Message {
   _id: string;
-  senderId: Sender;
+  senderId?: Sender;
   content: string;
   createdAt: string;
   isRead: boolean;
@@ -39,12 +48,63 @@ export default function Chat() {
   const [error, setError] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
+  // Initialize socket connection when component mounts
+  useEffect(() => {
+    initializeSocketConnection();
+
+    // Listen for new messages
+    onNewMessage((data) => {
+      console.log("New message received:", data);
+      // Add message only if it doesn't already exist (prevents duplicates)
+      //prevMessage is provided by react and contains and contains cur val of messages state
+      setMessages((prevMessages) => {
+        const messageExists = prevMessages.some((msg) => msg._id === data._id);
+        if (messageExists) return prevMessages;
+        return [...prevMessages, data];
+      });
+    });
+
+    // Listen for typing indicators
+    onUserTyping((data) => {
+      if (data.userId !== user?._id) {
+        setOtherUserTyping(data.isTyping);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (conversationId) {
+        leaveConversation(conversationId);
+      }
+      disconnectSocket();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Join conversation when conversationId changes
   useEffect(() => {
     if (conversationId) {
       fetchMessages();
+      joinConversation(conversationId);
     }
+
+    return () => {
+      if (conversationId) {
+        leaveConversation(conversationId);
+      }
+    };
   }, [conversationId]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const fetchMessages = async (page: number = 1) => {
     try {
@@ -73,24 +133,53 @@ export default function Chat() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !conversationId) return;
 
     try {
       setSending(true);
-      await apiClient.post("/chat/messages", {
+
+      // Send via REST API - the backend will broadcast via WebSocket to all participants
+      const response = await apiClient.post("/chat/messages", {
         conversationId: conversationId,
         content: newMessage,
         messageType: "text",
       });
 
+      // Add the properly formatted message from API response to state
+      if (response.data.success && response.data.message) {
+        setMessages((prevMessages) => [...prevMessages, response.data.message]);
+      }
+
       setNewMessage("");
-      // Refresh messages to get the new message
-      await fetchMessages();
+
+      // Stop typing indicator
+      if (conversationId) {
+        sendTypingIndicator(conversationId, false);
+      }
     } catch (err: any) {
       console.error("Error sending message:", err);
       setError(err.response?.data?.message || "Failed to send message");
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+
+    // Send typing indicator
+    if (conversationId) {
+      sendTypingIndicator(conversationId, true);
+
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Stop typing indicator after 2 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(() => {
+        sendTypingIndicator(conversationId, false);
+      }, 2000);
     }
   };
 
@@ -233,10 +322,8 @@ export default function Chat() {
             </p>
           ) : (
             messages.map((message) => {
-              const isOwnMessage = message.senderId._id === user?._id;
-              const senderName = message.senderId.firstName
-                ? `${message.senderId.firstName} ${message.senderId.lastName}`
-                : message.senderId.lastName;
+              const isOwnMessage = message.senderId?._id === user?._id;
+              const senderName = message.senderId?.lastName || "Unknown User";
 
               return (
                 <div
@@ -281,6 +368,22 @@ export default function Chat() {
               );
             })
           )}
+
+          {/* Typing indicator */}
+          {otherUserTyping && (
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#666",
+                fontStyle: "italic",
+                marginTop: "8px",
+              }}
+            >
+              Someone is typing...
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}
@@ -291,7 +394,7 @@ export default function Chat() {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleTyping}
             placeholder="Type your message..."
             disabled={sending}
             style={{
