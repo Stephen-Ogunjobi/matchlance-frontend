@@ -10,6 +10,9 @@ import {
   sendTypingIndicator,
   onUserTyping,
   disconnectSocket,
+  markMessagesAsRead,
+  onMessageDelivered,
+  onMessagesRead,
 } from "../utils/socket";
 
 interface Sender {
@@ -26,6 +29,7 @@ interface Message {
   createdAt: string;
   isRead: boolean;
   readAt?: string;
+  deliveredAt?: string;
   messageType?: string;
   fileUrl?: string;
   fileName?: string;
@@ -77,6 +81,24 @@ export default function Chat() {
       }
     });
 
+    // Listen for message delivered status
+    onMessageDelivered(({ messageId, deliveredAt }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === messageId ? { ...msg, deliveredAt } : msg
+        )
+      );
+    });
+
+    // Listen for messages read status
+    onMessagesRead(({ messageIds, readAt }) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          messageIds.includes(msg._id) ? { ...msg, isRead: true, readAt } : msg
+        )
+      );
+    });
+
     // Cleanup on unmount
     return () => {
       if (conversationId) {
@@ -105,6 +127,17 @@ export default function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Mark messages as read when viewing the conversation
+  useEffect(() => {
+    if (conversationId && messages.length > 0) {
+      const lastMessageId = messages[messages.length - 1]._id;
+      markMessagesAsRead({
+        conversationId,
+        messageId: lastMessageId,
+      });
+    }
+  }, [messages, conversationId]);
 
   const fetchMessages = async (page: number = 1) => {
     try {
@@ -359,9 +392,22 @@ export default function Chat() {
                         fontSize: "11px",
                         opacity: 0.7,
                         textAlign: "right",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        gap: "6px",
                       }}
                     >
-                      {formatDate(message.createdAt)}
+                      <span>{formatDate(message.createdAt)}</span>
+                      {isOwnMessage && (
+                        <span style={{ fontSize: "10px", fontWeight: "bold" }}>
+                          {message.readAt
+                            ? "✓✓"
+                            : message.deliveredAt
+                            ? "✓✓"
+                            : "✓"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
