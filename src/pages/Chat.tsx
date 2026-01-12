@@ -43,6 +43,15 @@ interface Pagination {
   hasMore: boolean;
 }
 
+interface Participant {
+  _id: string;
+  firstName?: string;
+  lastName: string;
+  email: string;
+  role?: string;
+  profilePicture?: string;
+}
+
 export default function Chat() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const { user } = useUser();
@@ -53,6 +62,7 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [otherParticipant, setOtherParticipant] = useState<Participant | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
@@ -138,6 +148,25 @@ export default function Chat() {
       });
     }
   }, [messages, conversationId]);
+
+  // Extract other participant from messages
+  useEffect(() => {
+    if (messages.length > 0 && user) {
+      // Find the first message from someone who isn't the current user
+      const otherUserMessage = messages.find(
+        (msg) => msg.senderId && msg.senderId._id !== user._id
+      );
+
+      if (otherUserMessage && otherUserMessage.senderId) {
+        setOtherParticipant({
+          _id: otherUserMessage.senderId._id,
+          firstName: otherUserMessage.senderId.firstName,
+          lastName: otherUserMessage.senderId.lastName,
+          email: otherUserMessage.senderId.email,
+        });
+      }
+    }
+  }, [messages, user]);
 
   const fetchMessages = async (page: number = 1) => {
     try {
@@ -287,7 +316,57 @@ export default function Chat() {
           padding: "20px",
         }}
       >
-        <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>Chat</h1>
+        {/* Chat Header with Profile */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "20px",
+            paddingBottom: "16px",
+            borderBottom: "1px solid #ddd",
+          }}
+        >
+          {otherParticipant ? (
+            <Link
+              to={`/freelancer-profile/${otherParticipant._id}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              <div
+                style={{
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "50%",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  flexShrink: 0,
+                }}
+              >
+                {otherParticipant.firstName?.[0] || otherParticipant.lastName[0]}
+              </div>
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}>
+                  {otherParticipant.firstName || ""} {otherParticipant.lastName}
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}>
+              Chat
+            </div>
+          )}
+        </div>
 
         {error && (
           <div
