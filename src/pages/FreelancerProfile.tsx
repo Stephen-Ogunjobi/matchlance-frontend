@@ -82,7 +82,7 @@ export default function FreelancerProfile() {
     if (userLoading) return;
 
     if (!isOwnProfile || !isFreelancer) {
-      // TODO: Show read-only view for other users' profiles
+      // Redirect to home if not viewing own profile or not a freelancer
       navigate("/");
     }
   }, [isOwnProfile, isFreelancer, navigate, userLoading]);

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import apiClient from "../utils/api";
 import { useUser } from "../contexts/UserContext";
 import {
@@ -55,6 +55,7 @@ interface Participant {
 export default function Chat() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const { user } = useUser();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +63,9 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const [otherParticipant, setOtherParticipant] = useState<Participant | null>(null);
+  const [otherParticipant, setOtherParticipant] = useState<Participant | null>(
+    null
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
@@ -167,6 +170,13 @@ export default function Chat() {
       }
     }
   }, [messages, user]);
+
+  const handleViewProfile = () => {
+    if (!otherParticipant) return;
+
+    // Navigate to the read-only profile view page
+    navigate(`/view-profile/${otherParticipant._id}`);
+  };
 
   const fetchMessages = async (page: number = 1) => {
     try {
@@ -328,14 +338,13 @@ export default function Chat() {
           }}
         >
           {otherParticipant ? (
-            <Link
-              to={`/freelancer-profile/${otherParticipant._id}`}
+            <div
+              onClick={handleViewProfile}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
-                textDecoration: "none",
-                color: "inherit",
+                cursor: "pointer",
               }}
             >
               <div
@@ -353,14 +362,17 @@ export default function Chat() {
                   flexShrink: 0,
                 }}
               >
-                {otherParticipant.firstName?.[0] || otherParticipant.lastName[0]}
+                {otherParticipant.firstName?.[0] ||
+                  otherParticipant.lastName[0]}
               </div>
               <div>
-                <div style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}>
+                <div
+                  style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}
+                >
                   {otherParticipant.firstName || ""} {otherParticipant.lastName}
                 </div>
               </div>
-            </Link>
+            </div>
           ) : (
             <div style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}>
               Chat
@@ -495,7 +507,7 @@ export default function Chat() {
           )}
 
           {/* Typing indicator */}
-          {otherUserTyping && (
+          {otherUserTyping && otherParticipant && (
             <div
               style={{
                 fontSize: "12px",
@@ -504,7 +516,8 @@ export default function Chat() {
                 marginTop: "8px",
               }}
             >
-              Someone is typing...
+              {otherParticipant.firstName || otherParticipant.lastName} is
+              typing...
             </div>
           )}
 

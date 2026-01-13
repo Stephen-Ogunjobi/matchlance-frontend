@@ -19,6 +19,7 @@ import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import EditJob from "./pages/EditJob";
 import FreelancerProfile from "./pages/FreelancerProfile";
+import ViewFreelancerProfile from "./pages/ViewFreelancerProfile";
 import MatchedJobDetail from "./pages/MatchedJobDetail";
 import MyProposals from "./pages/MyProposals";
 import EditProposal from "./pages/EditProposal";
@@ -103,6 +104,10 @@ function AppContent() {
         <Route
           path="/freelancer-profile/:userId"
           element={<FreelancerProfile />}
+        />
+        <Route
+          path="/view-profile/:userId"
+          element={<ViewFreelancerProfile />}
         />
         <Route path="/matched-job/:jobId" element={<MatchedJobDetail />} />
         <Route path="/my-proposals" element={<MyProposals />} />
