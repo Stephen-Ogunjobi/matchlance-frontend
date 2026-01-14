@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../utils/api";
+import { useUser } from "../contexts/UserContext";
 
 interface Language {
   language: string;
@@ -40,13 +41,25 @@ interface FreelancerProfile {
 export default function ViewFreelancerProfile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { user, loading: userLoading } = useUser();
   const [profile, setProfile] = useState<FreelancerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
+  // Redirect if user is not a client
+  useEffect(() => {
+    if (userLoading) return;
+
+    if (!user || user.role !== "client") {
+      setError("Only clients can view freelancer profiles");
+      setLoading(false);
+    }
+  }, [user, userLoading]);
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!userId) return;
+      if (!user || user.role !== "client") return;
 
       try {
         setLoading(true);
@@ -66,7 +79,7 @@ export default function ViewFreelancerProfile() {
     };
 
     fetchProfile();
-  }, [userId]);
+  }, [userId, user]);
 
   if (loading) {
     return (

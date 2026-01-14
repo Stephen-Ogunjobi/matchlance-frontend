@@ -66,6 +66,7 @@ export default function Chat() {
   const [otherParticipant, setOtherParticipant] = useState<Participant | null>(
     null
   );
+  const [hiring, setHiring] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
@@ -172,10 +173,45 @@ export default function Chat() {
   }, [messages, user]);
 
   const handleViewProfile = () => {
-    if (!otherParticipant) return;
+    if (!otherParticipant || !user) return;
+
+    // Only clients can view freelancer profiles
+    if (user.role !== "client") {
+      setError("Only clients can view freelancer profiles");
+      return;
+    }
 
     // Navigate to the read-only profile view page
     navigate(`/view-profile/${otherParticipant._id}`);
+  };
+
+  const handleHire = async () => {
+    if (!conversationId || !otherParticipant) return;
+
+    try {
+      setHiring(true);
+      setError(null);
+
+      const response = await apiClient.post(
+        `/contract/proposal/${conversationId}/hire`
+      );
+
+      if (response.data.success) {
+        // Show success message or navigate to contract page
+        alert("Freelancer hired successfully!");
+        // Optionally navigate to a contract or confirmation page
+        // navigate(`/contracts/${response.data.contractId}`);
+      }
+    } catch (err: any) {
+      console.error("Error hiring freelancer:", err);
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to hire freelancer"
+      );
+    } finally {
+      setHiring(false);
+    }
   };
 
   const fetchMessages = async (page: number = 1) => {
@@ -331,7 +367,7 @@ export default function Chat() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "12px",
+            justifyContent: "space-between",
             marginBottom: "20px",
             paddingBottom: "16px",
             borderBottom: "1px solid #ddd",
@@ -339,12 +375,12 @@ export default function Chat() {
         >
           {otherParticipant ? (
             <div
-              onClick={handleViewProfile}
+              onClick={user?.role === "client" ? handleViewProfile : undefined}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
-                cursor: "pointer",
+                cursor: user?.role === "client" ? "pointer" : "default",
               }}
             >
               <div
@@ -377,6 +413,36 @@ export default function Chat() {
             <div style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}>
               Chat
             </div>
+          )}
+
+          {user?.role === "client" && otherParticipant && (
+            <button
+              onClick={handleHire}
+              disabled={hiring}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: hiring ? "#6c757d" : "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "600",
+                cursor: hiring ? "not-allowed" : "pointer",
+                transition: "background-color 0.2s",
+              }}
+              onMouseOver={(e) => {
+                if (!hiring) {
+                  e.currentTarget.style.backgroundColor = "#218838";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!hiring) {
+                  e.currentTarget.style.backgroundColor = "#28a745";
+                }
+              }}
+            >
+              {hiring ? "Hiring..." : "Hire"}
+            </button>
           )}
         </div>
 
