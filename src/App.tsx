@@ -25,6 +25,7 @@ import MyProposals from "./pages/MyProposals";
 import EditProposal from "./pages/EditProposal";
 import MyJobs from "./pages/MyJobs";
 import Chat from "./pages/Chat";
+import Contract from "./pages/Contract";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { setUnauthenticatedCallback } from "./utils/api";
 import apiClient from "./utils/api";
@@ -114,6 +115,7 @@ function AppContent() {
         <Route path="/edit-proposal/:proposalId" element={<EditProposal />} />
         <Route path="/my-jobs" element={<MyJobs />} />
         <Route path="/chat/:conversationId" element={<Chat />} />
+        <Route path="/contract/:contractId" element={<Contract />} />
       </Routes>
     </div>
   );

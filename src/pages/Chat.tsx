@@ -68,6 +68,7 @@ export default function Chat() {
   );
   const [hiring, setHiring] = useState(false);
   const [isAlreadyHired, setIsAlreadyHired] = useState(false);
+  const [contractId, setContractId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
@@ -164,10 +165,12 @@ export default function Chat() {
         if (response.data.success || response.data.contract) {
           // If a contract exists for this conversation, the freelancer is already hired
           setIsAlreadyHired(true);
+          setContractId(response.data.contract._id);
         }
       } catch (err: any) {
         // 404 or other errors mean no contract exists, which is fine
         setIsAlreadyHired(false);
+        setContractId(null);
       }
     };
 
@@ -436,34 +439,59 @@ export default function Chat() {
             </div>
           )}
 
-          {user?.role === "client" && otherParticipant && !isAlreadyHired && (
-            <button
-              onClick={handleHire}
-              disabled={hiring}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: hiring ? "#6c757d" : "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: hiring ? "not-allowed" : "pointer",
-                transition: "background-color 0.2s",
-              }}
-              onMouseOver={(e) => {
-                if (!hiring) {
-                  e.currentTarget.style.backgroundColor = "#218838";
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!hiring) {
-                  e.currentTarget.style.backgroundColor = "#28a745";
-                }
-              }}
-            >
-              {hiring ? "Hiring..." : "Hire"}
-            </button>
+          {user?.role === "client" && otherParticipant && (
+            isAlreadyHired && contractId ? (
+              <button
+                onClick={() => navigate(`/contract/${contractId}`)}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = "#0056b3";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = "#007bff";
+                }}
+              >
+                View Contract
+              </button>
+            ) : (
+              <button
+                onClick={handleHire}
+                disabled={hiring}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: hiring ? "#6c757d" : "#28a745",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: hiring ? "not-allowed" : "pointer",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  if (!hiring) {
+                    e.currentTarget.style.backgroundColor = "#218838";
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!hiring) {
+                    e.currentTarget.style.backgroundColor = "#28a745";
+                  }
+                }}
+              >
+                {hiring ? "Hiring..." : "Hire"}
+              </button>
+            )
           )}
         </div>
 
