@@ -67,6 +67,7 @@ export default function Chat() {
     null
   );
   const [hiring, setHiring] = useState(false);
+  const [isAlreadyHired, setIsAlreadyHired] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
@@ -152,6 +153,26 @@ export default function Chat() {
       });
     }
   }, [messages, conversationId]);
+
+  // Check if freelancer is already hired
+  useEffect(() => {
+    const checkContractStatus = async () => {
+      if (!conversationId) return;
+
+      try {
+        const response = await apiClient.get(`/contract/${conversationId}`);
+        if (response.data.success || response.data.contract) {
+          // If a contract exists for this conversation, the freelancer is already hired
+          setIsAlreadyHired(true);
+        }
+      } catch (err: any) {
+        // 404 or other errors mean no contract exists, which is fine
+        setIsAlreadyHired(false);
+      }
+    };
+
+    checkContractStatus();
+  }, [conversationId]);
 
   // Extract other participant from messages
   useEffect(() => {
@@ -415,7 +436,7 @@ export default function Chat() {
             </div>
           )}
 
-          {user?.role === "client" && otherParticipant && (
+          {user?.role === "client" && otherParticipant && !isAlreadyHired && (
             <button
               onClick={handleHire}
               disabled={hiring}
