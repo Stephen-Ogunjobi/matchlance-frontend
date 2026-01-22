@@ -3,7 +3,6 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Link,
   useNavigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -26,13 +25,13 @@ import EditProposal from "./pages/EditProposal";
 import MyJobs from "./pages/MyJobs";
 import Chat from "./pages/Chat";
 import Contract from "./components/Contract";
+import Navbar from "./components/Navbar";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { setUnauthenticatedCallback } from "./utils/api";
 import apiClient from "./utils/api";
 
 function AppContent() {
   const { user, setUser, isFreelancer } = useUser();
-  const isLoggedIn = !!user;
   const navigate = useNavigate();
   const [hasFreelancerProfile, setHasFreelancerProfile] = useState<
     boolean | null
@@ -72,24 +71,7 @@ function AppContent() {
 
   return (
     <div style={{ padding: 16 }}>
-      <header style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-        <Link to="/">Home</Link>
-        {!isFreelancer && <Link to="/jobs">Jobs</Link>}
-        {isFreelancer && hasFreelancerProfile && user?._id && (
-          <>
-            <Link to={`/freelancer-profile/${user._id}`}>Profile</Link>
-            <Link to="/my-proposals">My Proposals</Link>
-            <Link to="/my-jobs">My Jobs</Link>
-          </>
-        )}
-        {!isLoggedIn && (
-          <>
-            <Link to="/signup">Sign up</Link>
-            <Link to="/login">Log in</Link>
-            <Link to="/reset-password">Reset Password</Link>
-          </>
-        )}
-      </header>
+      <Navbar hasFreelancerProfile={hasFreelancerProfile} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
