@@ -148,100 +148,101 @@ export default function Home() {
 
   if (userLoading) {
     return (
-      <div className="home-container">
-        <h1>Welcome</h1>
-        <p>Loading...</p>
+      <div className="min-h-screen bg-gray-50 px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="home-container">
-      <h1>Welcome</h1>
-      <p>Welcome to MatchLance</p>
+    <div className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
+        <p className="mt-2 text-gray-600">Welcome to MatchLance</p>
 
-      {fetchingJobs || checkingProfile || fetchingMatchedJobs ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          {isClient && (
-            <button onClick={handlePostJob} style={{ marginRight: "8px" }}>
-              {postJobButtonText}
-            </button>
-          )}
-          {isFreelancer && !hasFreelancerProfile && (
-            <button
-              onClick={handleCompleteProfile}
-              style={{ marginRight: "8px" }}
-            >
-              Complete your profile to see available jobs
-            </button>
-          )}
-          <button onClick={handleLogout} disabled={loading}>
-            {loading ? "Logging out..." : "Logout"}
-          </button>
-
-          {isFreelancer && hasFreelancerProfile && matchedJobs.length > 0 && (
-            <div style={{ marginTop: "24px" }}>
-              <h2>Available Jobs for You</h2>
-              <div style={{ marginTop: "16px" }}>
-                {matchedJobs.map((job) => (
-                  <div
-                    key={job._id}
-                    onClick={() => navigate(`/matched-job/${job._id}`)}
-                    style={{
-                      border: "1px solid #ddd",
-                      borderRadius: "8px",
-                      padding: "16px",
-                      marginBottom: "12px",
-                      backgroundColor: "#f9f9f9",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f0f0f0";
-                      e.currentTarget.style.borderColor = "#007bff";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f9f9f9";
-                      e.currentTarget.style.borderColor = "#ddd";
-                    }}
-                  >
-                    <h3 style={{ margin: "0 0 8px 0" }}>{job.title}</h3>
-                    {job.description && (
-                      <p style={{ margin: "0 0 8px 0", color: "#666" }}>
-                        {job.description.length > 150
-                          ? job.description.substring(0, 150) + "..."
-                          : job.description}
-                      </p>
-                    )}
-                    <div
-                      style={{ display: "flex", gap: "16px", fontSize: "14px" }}
-                    >
-                      {job.budget && (
-                        <span>
-                          <strong>Budget:</strong> {job.budget.currency}
-                          {job.budget.amount} ({job.budget.type})
-                        </span>
-                      )}
-                      {job.location && (
-                        <span>
-                          <strong>Location:</strong> {job.location}
-                        </span>
-                      )}
-                      {job.matchScore && (
-                        <span>
-                          <strong>Match:</strong> {job.matchScore}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {fetchingJobs || checkingProfile || fetchingMatchedJobs ? (
+          <p className="mt-4 text-gray-600">Loading...</p>
+        ) : (
+          <>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {isClient && (
+                <button
+                  onClick={handlePostJob}
+                  className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  {postJobButtonText}
+                </button>
+              )}
+              {isFreelancer && !hasFreelancerProfile && (
+                <button
+                  onClick={handleCompleteProfile}
+                  className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                >
+                  Complete your profile to see available jobs
+                </button>
+              )}
+              <button
+                onClick={handleLogout}
+                disabled={loading}
+                className="bg-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Logging out..." : "Logout"}
+              </button>
             </div>
-          )}
-        </>
-      )}
+
+            {isFreelancer && hasFreelancerProfile && matchedJobs.length > 0 && (
+              <div className="mt-10">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Available Jobs for You
+                </h2>
+                <div className="mt-6 space-y-4">
+                  {matchedJobs.map((job) => (
+                    <div
+                      key={job._id}
+                      onClick={() => navigate(`/matched-job/${job._id}`)}
+                      className="border border-gray-200 rounded-xl p-5 bg-white cursor-pointer transition-all hover:border-blue-500 hover:shadow-md"
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {job.title}
+                      </h3>
+                      {job.description && (
+                        <p className="mt-2 text-gray-600">
+                          {job.description.length > 150
+                            ? job.description.substring(0, 150) + "..."
+                            : job.description}
+                        </p>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-700">
+                        {job.budget && (
+                          <span>
+                            <span className="font-medium">Budget:</span>{" "}
+                            {job.budget.currency}
+                            {job.budget.amount} ({job.budget.type})
+                          </span>
+                        )}
+                        {job.location && (
+                          <span>
+                            <span className="font-medium">Location:</span>{" "}
+                            {job.location}
+                          </span>
+                        )}
+                        {job.matchScore && (
+                          <span className="text-green-600 font-medium">
+                            {job.matchScore}% Match
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
