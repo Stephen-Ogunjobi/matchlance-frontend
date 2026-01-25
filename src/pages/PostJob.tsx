@@ -186,436 +186,333 @@ export default function PostJob() {
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-      <h1>Post a New Job</h1>
+    <div className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900">Post a New Job</h1>
 
-      {error && (
-        <div
-          style={{
-            padding: "10px",
-            marginBottom: "20px",
-            backgroundColor: "#fee",
-            border: "1px solid #f88",
-            borderRadius: "4px",
-            color: "#c33",
-          }}
-        >
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit}>
-        {/* Job Title */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="title"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Job Title *
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            placeholder="e.g., Build a responsive e-commerce website"
-            style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-            minLength={10}
-            maxLength={100}
-            required
-          />
-          <small style={{ color: "#666" }}>
-            {formData.title.length}/100 characters (min 10)
-          </small>
-        </div>
-
-        {/* Description */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="description"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Job Description *
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="Describe the job in detail..."
-            style={{
-              width: "100%",
-              padding: "8px",
-              fontSize: "14px",
-              minHeight: "150px",
-            }}
-            minLength={100}
-            maxLength={5000}
-            required
-          />
-          <small style={{ color: "#666" }}>
-            {formData.description.length}/5000 characters (min 100)
-          </small>
-        </div>
-
-        {/* Category */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="category"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Category *
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-            required
-          >
-            <option value="">Select a category</option>
-            <option value="web-development">Web Development</option>
-            <option value="mobile-development">Mobile Development</option>
-            <option value="design">Design</option>
-            <option value="writing">Writing</option>
-            <option value="marketing">Marketing</option>
-            <option value="data-science">Data Science</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        {/* Skills */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="skillInput"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Required Skills * (1-10 skills)
-          </label>
-          <div style={{ display: "flex", gap: "8px" }}>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          {/* Job Title */}
+          <div>
+            <label
+              htmlFor="title"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
+              Job Title *
+            </label>
             <input
               type="text"
-              id="skillInput"
-              value={skillInput}
-              onChange={(e) => setSkillInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddSkill();
-                }
-              }}
-              placeholder="e.g., React, Node.js, TypeScript"
-              style={{ flex: 1, padding: "8px", fontSize: "14px" }}
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              placeholder="e.g., Build a responsive e-commerce website"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              minLength={10}
+              maxLength={100}
+              required
             />
-            <button
-              type="button"
-              onClick={handleAddSkill}
-              disabled={formData.skills.length >= 10}
-              style={{ padding: "8px 16px" }}
-            >
-              Add
-            </button>
+            <p className="mt-1.5 text-sm text-gray-500">
+              {formData.title.length}/100 characters (min 10)
+            </p>
           </div>
-          <div
-            style={{
-              marginTop: "10px",
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-            }}
-          >
-            {formData.skills.map((skill) => (
-              <span
-                key={skill}
-                style={{
-                  padding: "4px 8px",
-                  backgroundColor: "#e0e0e0",
-                  borderRadius: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
+
+          {/* Description */}
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
+              Job Description *
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Describe the job in detail..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm min-h-[180px] resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              minLength={100}
+              maxLength={5000}
+              required
+            />
+            <p className="mt-1.5 text-sm text-gray-500">
+              {formData.description.length}/5000 characters (min 100)
+            </p>
+          </div>
+
+          {/* Category */}
+          <div>
+            <label
+              htmlFor="category"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
+              Category *
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              required
+            >
+              <option value="">Select a category</option>
+              <option value="web-development">Web Development</option>
+              <option value="mobile-development">Mobile Development</option>
+              <option value="design">Design</option>
+              <option value="writing">Writing</option>
+              <option value="marketing">Marketing</option>
+              <option value="data-science">Data Science</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          {/* Skills */}
+          <div>
+            <label
+              htmlFor="skillInput"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
+              Required Skills * (1-10 skills)
+            </label>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                id="skillInput"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSkill();
+                  }
                 }}
+                placeholder="e.g., React, Node.js, TypeScript"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              />
+              <button
+                type="button"
+                onClick={handleAddSkill}
+                disabled={formData.skills.length >= 10}
+                className="px-5 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {skill}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveSkill(skill)}
-                  style={{
-                    border: "none",
-                    background: "none",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                  }}
+                Add
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {formData.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm"
                 >
-                  ×
-                </button>
-              </span>
-            ))}
+                  {skill}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSkill(skill)}
+                    className="text-blue-600 hover:text-blue-800 font-bold"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-gray-500">
+              {formData.skills.length}/10 skills
+            </p>
           </div>
-          <small style={{ color: "#666" }}>
-            {formData.skills.length}/10 skills
-          </small>
-        </div>
 
-        {/* Budget Type */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Budget Type *
-          </label>
-          <div style={{ display: "flex", gap: "16px" }}>
-            <label
-              style={{ display: "flex", alignItems: "center", gap: "4px" }}
-            >
-              <input
-                type="radio"
-                name="budgetType"
-                value="fixed"
-                checked={formData.budgetType === "fixed"}
-                onChange={handleInputChange}
-              />
-              Fixed Price
+          {/* Budget Type */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">
+              Budget Type *
             </label>
-            <label
-              style={{ display: "flex", alignItems: "center", gap: "4px" }}
-            >
-              <input
-                type="radio"
-                name="budgetType"
-                value="hourly"
-                checked={formData.budgetType === "hourly"}
-                onChange={handleInputChange}
-              />
-              Hourly Rate
-            </label>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="budgetType"
+                  value="fixed"
+                  checked={formData.budgetType === "fixed"}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">Fixed Price</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="budgetType"
+                  value="hourly"
+                  checked={formData.budgetType === "hourly"}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">Hourly Rate</span>
+              </label>
+            </div>
           </div>
-        </div>
 
-        {/* Budget Amount (Fixed) */}
-        {formData.budgetType === "fixed" && (
-          <div style={{ marginBottom: "20px" }}>
+          {/* Budget Amount (Fixed) */}
+          {formData.budgetType === "fixed" && (
+            <div>
+              <label
+                htmlFor="budgetAmount"
+                className="block text-sm font-semibold text-gray-900 mb-2"
+              >
+                Budget Amount (USD) *
+              </label>
+              <input
+                type="number"
+                id="budgetAmount"
+                name="budgetAmount"
+                value={formData.budgetAmount}
+                onChange={handleInputChange}
+                placeholder="e.g., 5000"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+          )}
+
+          {/* Budget Range (Hourly) */}
+          {formData.budgetType === "hourly" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="budgetMin"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Min Hourly Rate (USD) *
+                </label>
+                <input
+                  type="number"
+                  id="budgetMin"
+                  name="budgetMin"
+                  value={formData.budgetMin}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 50"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="budgetMax"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
+                  Max Hourly Rate (USD) *
+                </label>
+                <input
+                  type="number"
+                  id="budgetMax"
+                  name="budgetMax"
+                  value={formData.budgetMax}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 100"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Experience Level */}
+          <div>
             <label
-              htmlFor="budgetAmount"
-              style={{
-                display: "block",
-                marginBottom: "5px",
-                fontWeight: "bold",
-              }}
+              htmlFor="experienceLevel"
+              className="block text-sm font-semibold text-gray-900 mb-2"
             >
-              Budget Amount (USD) *
+              Experience Level *
+            </label>
+            <select
+              id="experienceLevel"
+              name="experienceLevel"
+              value={formData.experienceLevel}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              required
+            >
+              <option value="">Select experience level</option>
+              <option value="entry">Entry Level</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+
+          {/* Duration Type */}
+          <div>
+            <label
+              htmlFor="durationType"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
+              Project Duration *
+            </label>
+            <select
+              id="durationType"
+              name="durationType"
+              value={formData.durationType}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              required
+            >
+              <option value="">Select duration</option>
+              <option value="short">Short (Less than 1 month)</option>
+              <option value="medium">Medium (1-3 months)</option>
+              <option value="long">Long (More than 3 months)</option>
+            </select>
+          </div>
+
+          {/* Estimated Hours */}
+          <div>
+            <label
+              htmlFor="estimatedHours"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
+              Estimated Hours (Optional)
             </label>
             <input
               type="number"
-              id="budgetAmount"
-              name="budgetAmount"
-              value={formData.budgetAmount}
+              id="estimatedHours"
+              name="estimatedHours"
+              value={formData.estimatedHours}
               onChange={handleInputChange}
-              placeholder="e.g., 5000"
-              style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-              min="0"
-              step="0.01"
-              required
+              placeholder="e.g., 40"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              min="1"
             />
           </div>
-        )}
 
-        {/* Budget Range (Hourly) */}
-        {formData.budgetType === "hourly" && (
-          <div
-            style={{
-              marginBottom: "20px",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-            }}
-          >
-            <div>
-              <label
-                htmlFor="budgetMin"
-                style={{
-                  display: "block",
-                  marginBottom: "5px",
-                  fontWeight: "bold",
-                }}
-              >
-                Min Hourly Rate (USD) *
-              </label>
-              <input
-                type="number"
-                id="budgetMin"
-                name="budgetMin"
-                value={formData.budgetMin}
-                onChange={handleInputChange}
-                placeholder="e.g., 50"
-                style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="budgetMax"
-                style={{
-                  display: "block",
-                  marginBottom: "5px",
-                  fontWeight: "bold",
-                }}
-              >
-                Max Hourly Rate (USD) *
-              </label>
-              <input
-                type="number"
-                id="budgetMax"
-                name="budgetMax"
-                value={formData.budgetMax}
-                onChange={handleInputChange}
-                placeholder="e.g., 100"
-                style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
+          {/* Submit Buttons */}
+          <div className="flex gap-4 pt-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Posting..." : "Post Job"}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
-        )}
-
-        {/* Experience Level */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="experienceLevel"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Experience Level *
-          </label>
-          <select
-            id="experienceLevel"
-            name="experienceLevel"
-            value={formData.experienceLevel}
-            onChange={handleInputChange}
-            style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-            required
-          >
-            <option value="">Select experience level</option>
-            <option value="entry">Entry Level</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="expert">Expert</option>
-          </select>
-        </div>
-
-        {/* Duration Type */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="durationType"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Project Duration *
-          </label>
-          <select
-            id="durationType"
-            name="durationType"
-            value={formData.durationType}
-            onChange={handleInputChange}
-            style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-            required
-          >
-            <option value="">Select duration</option>
-            <option value="short">Short (Less than 1 month)</option>
-            <option value="medium">Medium (1-3 months)</option>
-            <option value="long">Long (More than 3 months)</option>
-          </select>
-        </div>
-
-        {/* Estimated Hours */}
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="estimatedHours"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-            }}
-          >
-            Estimated Hours (Optional)
-          </label>
-          <input
-            type="number"
-            id="estimatedHours"
-            name="estimatedHours"
-            value={formData.estimatedHours}
-            onChange={handleInputChange}
-            placeholder="e.g., 40"
-            style={{ width: "100%", padding: "8px", fontSize: "14px" }}
-            min="1"
-          />
-        </div>
-
-        {/* Submit Buttons */}
-        <div style={{ display: "flex", gap: "12px", marginTop: "30px" }}>
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "16px",
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
-            }}
-          >
-            {loading ? "Posting..." : "Post Job"}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "#6c757d",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "16px",
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
