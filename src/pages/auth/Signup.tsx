@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../utils/api";
+import apiClient from "../../utils/api";
 
 type Role = "freelancer" | "client" | null;
 

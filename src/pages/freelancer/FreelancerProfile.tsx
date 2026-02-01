@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import apiClient from "../utils/api";
-import { useUser } from "../contexts/UserContext";
+import apiClient from "../../utils/api";
+import { useUser } from "../../contexts/UserContext";
 
 type Category =
   | "web-development"

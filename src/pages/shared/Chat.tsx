@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import apiClient from "../utils/api";
-import { useUser } from "../contexts/UserContext";
+import apiClient from "../../utils/api";
+import { useUser } from "../../contexts/UserContext";
 import {
   initializeSocketConnection,
   joinConversation,
@@ -13,7 +13,7 @@ import {
   markMessagesAsRead,
   onMessageDelivered,
   onMessagesRead,
-} from "../utils/socket";
+} from "../../utils/socket";
 
 interface Sender {
   _id: string;

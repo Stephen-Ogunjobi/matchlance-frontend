@@ -7,10 +7,10 @@ interface NavbarProps {
 }
 
 const linkClasses = ({ isActive }: { isActive: boolean }) =>
-  `font-medium transition-colors ${
+  `px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-200 ${
     isActive
-      ? "text-indigo-500 border-b-2 border-indigo-500 pb-1"
-      : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+      ? "bg-indigo-500/10 text-indigo-500"
+      : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border)]"
   }`;
 
 export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
@@ -18,11 +18,11 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
   const isLoggedIn = !!user;
 
   return (
-    <header className="sticky top-0 z-50 flex items-center gap-6 px-6 py-4 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)]">
+    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)] relative">
       {/* Logo */}
       <NavLink
         to="/"
-        className="flex items-center gap-2 mr-4"
+        className="flex items-center gap-2"
       >
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
           <span className="text-white font-bold text-lg">M</span>
@@ -32,8 +32,8 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
         </span>
       </NavLink>
 
-      {/* Navigation Links */}
-      <nav className="flex items-center gap-6">
+      {/* Navigation Links - Centered */}
+      <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
         <NavLink to="/" className={linkClasses} end>
           Home
         </NavLink>
@@ -44,9 +44,6 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
         )}
         {isFreelancer && hasFreelancerProfile && user?._id && (
           <>
-            <NavLink to={`/freelancer-profile/${user._id}`} className={linkClasses}>
-              Profile
-            </NavLink>
             <NavLink to="/my-proposals" className={linkClasses}>
               My Proposals
             </NavLink>
@@ -58,7 +55,7 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
       </nav>
 
       {/* Right side actions */}
-      <div className="ml-auto flex items-center gap-3">
+      <div className="flex items-center gap-3">
         {!isLoggedIn ? (
           <>
             <NavLink
@@ -75,11 +72,12 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
             </NavLink>
           </>
         ) : (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-[var(--color-text-secondary)]">
-              {user.firstName || user.email}
-            </span>
-          </div>
+          <NavLink
+            to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : "/"}
+            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          >
+            {user.firstName || user.email}
+          </NavLink>
         )}
         <ThemeToggle />
       </div>

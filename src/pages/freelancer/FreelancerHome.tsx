@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../utils/api";
-import { useUser } from "../contexts/UserContext";
-
-interface JobPost {
-  id: string;
-  title: string;
-}
+import apiClient from "../../utils/api";
+import { useUser } from "../../contexts/UserContext";
 
 interface Budget {
   type: string;
@@ -23,51 +18,20 @@ interface MatchedJob {
   matchScore?: number;
 }
 
-export default function Home() {
+export default function FreelancerHome() {
   const [loading, setLoading] = useState(false);
-  const [jobPosts, setJobPosts] = useState<JobPost[]>([]);
-  const [fetchingJobs, setFetchingJobs] = useState(false);
   const [matchedJobs, setMatchedJobs] = useState<MatchedJob[]>([]);
   const [fetchingMatchedJobs, setFetchingMatchedJobs] = useState(false);
   const [hasFreelancerProfile, setHasFreelancerProfile] = useState<
     boolean | null
   >(null);
   const [checkingProfile, setCheckingProfile] = useState(false);
-  const {
-    user,
-    isClient,
-    isFreelancer,
-    setUser,
-    loading: userLoading,
-  } = useUser();
+  const { user, setUser, loading: userLoading } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchJobPosts = async () => {
-      if (!isClient) {
-        return;
-      }
-
-      setFetchingJobs(true);
-      try {
-        const response = await apiClient.get("/job/jobs");
-        setJobPosts(response.data.userJobs);
-      } catch (err: any) {
-        console.error("Error fetching job posts:", err);
-        setJobPosts([]);
-      } finally {
-        setFetchingJobs(false);
-      }
-    };
-
-    if (!userLoading) {
-      fetchJobPosts();
-    }
-  }, [isClient, userLoading]);
-
-  useEffect(() => {
     const checkFreelancerProfile = async () => {
-      if (!isFreelancer || !user?._id) {
+      if (!user?._id) {
         return;
       }
 
@@ -90,11 +54,11 @@ export default function Home() {
     if (!userLoading) {
       checkFreelancerProfile();
     }
-  }, [isFreelancer, user?._id, userLoading]);
+  }, [user?._id, userLoading]);
 
   useEffect(() => {
     const fetchMatchedJobs = async () => {
-      if (!isFreelancer || !hasFreelancerProfile) {
+      if (!hasFreelancerProfile) {
         return;
       }
 
@@ -115,7 +79,7 @@ export default function Home() {
     if (!userLoading && hasFreelancerProfile !== null) {
       fetchMatchedJobs();
     }
-  }, [isFreelancer, hasFreelancerProfile, userLoading]);
+  }, [hasFreelancerProfile, userLoading]);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -131,20 +95,11 @@ export default function Home() {
     }
   };
 
-  const handlePostJob = () => {
-    navigate("/post-job");
-  };
-
   const handleCompleteProfile = () => {
     if (user?._id) {
       navigate(`/freelancer-profile/${user._id}`);
     }
   };
-
-  const hasJobPosts = jobPosts.length > 0;
-  const postJobButtonText = hasJobPosts
-    ? "Post New Job"
-    : "Post Your First Job";
 
   if (userLoading) {
     return (
@@ -160,29 +115,41 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-12">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
-        <p className="mt-2 text-gray-600">Welcome to MatchLance</p>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Welcome{user?.firstName ? `, ${user.firstName}` : ""}
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Find jobs that match your skills and expertise
+        </p>
 
-        {fetchingJobs || checkingProfile || fetchingMatchedJobs ? (
+        {checkingProfile || fetchingMatchedJobs ? (
           <p className="mt-4 text-gray-600">Loading...</p>
         ) : (
           <>
             <div className="mt-6 flex flex-wrap gap-3">
-              {isClient && (
-                <button
-                  onClick={handlePostJob}
-                  className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  {postJobButtonText}
-                </button>
-              )}
-              {isFreelancer && !hasFreelancerProfile && (
+              {!hasFreelancerProfile && (
                 <button
                   onClick={handleCompleteProfile}
                   className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors"
                 >
                   Complete your profile to see available jobs
                 </button>
+              )}
+              {hasFreelancerProfile && (
+                <>
+                  <button
+                    onClick={() => navigate("/my-proposals")}
+                    className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    My Proposals
+                  </button>
+                  <button
+                    onClick={() => navigate("/my-jobs")}
+                    className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    My Jobs
+                  </button>
+                </>
               )}
               <button
                 onClick={handleLogout}
@@ -193,7 +160,7 @@ export default function Home() {
               </button>
             </div>
 
-            {isFreelancer && hasFreelancerProfile && matchedJobs.length > 0 && (
+            {hasFreelancerProfile && matchedJobs.length > 0 && (
               <div className="mt-10">
                 <h2 className="text-2xl font-semibold text-gray-900">
                   Available Jobs for You
@@ -238,6 +205,17 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {hasFreelancerProfile && matchedJobs.length === 0 && (
+              <div className="mt-10 p-8 bg-white rounded-xl border border-gray-200 text-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  No matched jobs yet
+                </h3>
+                <p className="mt-2 text-gray-600">
+                  We're working on finding the best jobs for your skills. Check back soon!
+                </p>
               </div>
             )}
           </>

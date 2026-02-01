@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import apiClient from "../utils/api";
-import { useUser } from "../contexts/UserContext";
+import apiClient from "../../utils/api";
+import { useUser } from "../../contexts/UserContext";
 
 interface Language {
   language: string;

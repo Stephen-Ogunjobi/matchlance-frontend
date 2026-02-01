@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import apiClient from "../utils/api";
+import apiClient from "../../utils/api";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
