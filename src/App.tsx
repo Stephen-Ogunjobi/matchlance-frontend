@@ -27,6 +27,7 @@ import Chat from "./pages/Chat";
 import Contract from "./components/Contract";
 import Navbar from "./components/Navbar";
 import { UserProvider, useUser } from "./contexts/UserContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { setUnauthenticatedCallback } from "./utils/api";
 import apiClient from "./utils/api";
 
@@ -70,7 +71,7 @@ function AppContent() {
   }, [isFreelancer, user?._id]);
 
   return (
-    <div style={{ padding: 16 }}>
+    <div className="min-h-screen bg-[var(--color-background)]">
       <Navbar hasFreelancerProfile={hasFreelancerProfile} />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -106,9 +107,11 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <UserProvider>
-        <AppContent />
-      </UserProvider>
+      <ThemeProvider>
+        <UserProvider>
+          <AppContent />
+        </UserProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
