@@ -1,6 +1,8 @@
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import ThemeToggle from "./ThemeToggle";
+import apiClient from "../utils/api";
 
 interface NavbarProps {
   hasFreelancerProfile: boolean | null;
@@ -14,8 +16,24 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
-  const { user, isFreelancer } = useUser();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const { user, setUser, isFreelancer } = useUser();
+  const navigate = useNavigate();
   const isLoggedIn = !!user;
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await apiClient.post("/auth/logout");
+      setUser(null);
+      navigate("/login");
+    } catch (err: any) {
+      console.error("Logout error:", err);
+      navigate("/login");
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)] relative">
@@ -72,12 +90,21 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
             </NavLink>
           </>
         ) : (
-          <NavLink
-            to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : "/"}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >
-            {user.firstName || user.email}
-          </NavLink>
+          <>
+            <NavLink
+              to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : "/"}
+              className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            >
+              {user.firstName || user.email}
+            </NavLink>
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors disabled:opacity-50"
+            >
+              {loggingOut ? "..." : "Logout"}
+            </button>
+          </>
         )}
         <ThemeToggle />
       </div>
