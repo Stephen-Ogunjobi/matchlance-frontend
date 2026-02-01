@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../../utils/api";
+import JobDetailsCard from "../../components/JobDetailsCard";
+import ProposalForm from "../../components/ProposalForm";
 
 interface Budget {
   type: string;
@@ -29,19 +31,6 @@ interface Job {
   updatedAt: string;
 }
 
-interface ProposalFormData {
-  coverLetter: string;
-  proposedBudget: {
-    min: string;
-    max: string;
-  };
-  estimatedTime: string;
-  availability: string;
-  portfolioLinks: string[];
-  questions: string;
-  attachments: File[];
-}
-
 export default function MatchedJobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
@@ -49,21 +38,7 @@ export default function MatchedJobDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [showProposalForm, setShowProposalForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-
-  const [formData, setFormData] = useState<ProposalFormData>({
-    coverLetter: "",
-    proposedBudget: {
-      min: "",
-      max: "",
-    },
-    estimatedTime: "",
-    availability: "",
-    portfolioLinks: [""],
-    questions: "",
-    attachments: [],
-  });
 
   useEffect(() => {
     if (jobId) {
@@ -87,20 +62,6 @@ export default function MatchedJobDetail() {
     }
   };
 
-  const formatBudget = (budget: Budget) => {
-    return `${budget.currency}${budget.amount} (${budget.type})`;
-  };
-
-  const formatDuration = (duration?: Duration) => {
-    if (!duration) return "Not specified";
-    const durationMap = {
-      short: "Less than 1 month",
-      medium: "1-3 months",
-      long: "More than 3 months",
-    };
-    return durationMap[duration.type];
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -110,260 +71,76 @@ export default function MatchedJobDetail() {
     });
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleProposalSuccess = () => {
+    setSubmitSuccess(true);
+    setShowProposalForm(false);
+    setError("");
   };
 
-  const handleBudgetChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: "min" | "max"
-  ) => {
-    const { value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      proposedBudget: {
-        ...prev.proposedBudget,
-        [field]: value,
-      },
-    }));
-  };
-
-  const handlePortfolioLinkChange = (index: number, value: string) => {
-    setFormData((prev) => {
-      const newLinks = [...prev.portfolioLinks];
-      newLinks[index] = value;
-      return { ...prev, portfolioLinks: newLinks };
-    });
-  };
-
-  const addPortfolioLink = () => {
-    if (formData.portfolioLinks.length < 5) {
-      setFormData((prev) => ({
-        ...prev,
-        portfolioLinks: [...prev.portfolioLinks, ""],
-      }));
-    }
-  };
-
-  const removePortfolioLink = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      portfolioLinks: prev.portfolioLinks.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const fileArray = Array.from(files);
-      const validFiles = fileArray.filter(
-        (file) =>
-          file.type === "application/pdf" ||
-          file.type === "application/msword" ||
-          file.type ===
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      );
-
-      if (validFiles.length !== fileArray.length) {
-        setError("Only PDF and DOC/DOCX files are allowed");
-        return;
-      }
-
-      if (formData.attachments.length + validFiles.length > 5) {
-        setError("Cannot exceed 5 attachments");
-        return;
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        attachments: [...prev.attachments, ...validFiles],
-      }));
-    }
-  };
-
-  const removeAttachment = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleSubmitProposal = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate required fields
-    if (
-      !formData.coverLetter ||
-      !formData.proposedBudget.min ||
-      !formData.proposedBudget.max ||
-      !formData.estimatedTime ||
-      !formData.availability
-    ) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
-    // Validate cover letter length
-    if (formData.coverLetter.length < 100) {
-      setError("Cover letter must be at least 100 characters");
-      return;
-    }
-
-    if (formData.coverLetter.length > 2000) {
-      setError("Cover letter cannot exceed 2000 characters");
-      return;
-    }
-
-    // Validate budget values
-    const minBudget = parseFloat(formData.proposedBudget.min);
-    const maxBudget = parseFloat(formData.proposedBudget.max);
-
-    if (isNaN(minBudget) || isNaN(maxBudget)) {
-      setError("Budget values must be valid numbers");
-      return;
-    }
-
-    if (minBudget < 0 || maxBudget < 0) {
-      setError("Budget values cannot be negative");
-      return;
-    }
-
-    if (minBudget > maxBudget) {
-      setError("Minimum budget cannot be greater than maximum budget");
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      setError("");
-
-      // Filter out empty portfolio links
-      const portfolioLinks = formData.portfolioLinks.filter(
-        (link) => link.trim() !== ""
-      );
-
-      // Create FormData for file upload
-      const formDataToSend = new FormData();
-      formDataToSend.append("coverLetter", formData.coverLetter);
-      formDataToSend.append("proposedBudget[min]", minBudget.toString());
-      formDataToSend.append("proposedBudget[max]", maxBudget.toString());
-      formDataToSend.append("estimatedTime", formData.estimatedTime);
-      formDataToSend.append("availability", formData.availability);
-
-      // Add portfolio links
-      if (portfolioLinks.length > 0) {
-        portfolioLinks.forEach((link, index) => {
-          formDataToSend.append(`portfolioLinks[${index}]`, link);
-        });
-      }
-
-      // Add questions if provided
-      if (formData.questions) {
-        formDataToSend.append("questions", formData.questions);
-      }
-
-      // Add attachments
-      formData.attachments.forEach((file) => {
-        formDataToSend.append("attachments", file);
-      });
-
-      await apiClient.post(`/proposal/job/${jobId}`, formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setSubmitSuccess(true);
-      setShowProposalForm(false);
-
-      // Reset form
-      setFormData({
-        coverLetter: "",
-        proposedBudget: {
-          min: "",
-          max: "",
-        },
-        estimatedTime: "",
-        availability: "",
-        portfolioLinks: [""],
-        questions: "",
-        attachments: [],
-      });
-    } catch (err: any) {
-      console.error("Error submitting proposal:", err);
-      setError(
-        err.response?.data?.message ||
-          "Failed to submit proposal. Please try again."
-      );
-    } finally {
-      setSubmitting(false);
-    }
+  const handleProposalError = (message: string) => {
+    setError(message);
   };
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-        <Link
-          to="/"
-          style={{
-            display: "inline-block",
-            marginBottom: "20px",
-            color: "#007bff",
-            textDecoration: "none",
-          }}
-        >
-          &larr; Back to Home
-        </Link>
-        <p>Loading job details...</p>
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-[var(--color-muted)] rounded-lg w-3/4"></div>
+            <div className="h-5 bg-[var(--color-muted)] rounded w-48"></div>
+            <div className="p-6 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)]">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="h-16 bg-[var(--color-muted)] rounded-xl"
+                  ></div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <div className="h-4 bg-[var(--color-muted)] rounded w-full"></div>
+                <div className="h-4 bg-[var(--color-muted)] rounded w-5/6"></div>
+                <div className="h-4 bg-[var(--color-muted)] rounded w-4/6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error && !job) {
     return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-        <Link
-          to="/"
-          style={{
-            display: "inline-block",
-            marginBottom: "20px",
-            color: "#007bff",
-            textDecoration: "none",
-          }}
-        >
-          &larr; Back to Home
-        </Link>
-        <div
-          style={{
-            padding: "10px",
-            marginBottom: "20px",
-            backgroundColor: "#fee",
-            border: "1px solid #f88",
-            borderRadius: "4px",
-            color: "#c33",
-          }}
-        >
-          {error}
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="p-6 rounded-2xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--color-error)]/10 flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-[var(--color-error)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+              Failed to Load Job
+            </h3>
+            <p className="text-[var(--color-error)] mb-6">{error}</p>
+            <button
+              onClick={() => navigate("/")}
+              className="px-5 py-2.5 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => navigate("/")}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Back to Home
-        </button>
       </div>
     );
   }
@@ -371,711 +148,77 @@ export default function MatchedJobDetail() {
   if (!job) return null;
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-      <Link
-        to="/"
-        style={{
-          display: "inline-block",
-          marginBottom: "20px",
-          color: "#007bff",
-          textDecoration: "none",
-          fontSize: "14px",
-        }}
-      >
-        &larr; Back to Home
-      </Link>
-
-      {submitSuccess && (
-        <div
-          style={{
-            padding: "12px",
-            marginBottom: "20px",
-            backgroundColor: "#d4edda",
-            border: "1px solid #c3e6cb",
-            borderRadius: "4px",
-            color: "#155724",
-          }}
-        >
-          Proposal submitted successfully!
-        </div>
-      )}
-
-      {error && job && (
-        <div
-          style={{
-            padding: "12px",
-            marginBottom: "20px",
-            backgroundColor: "#fee",
-            border: "1px solid #f88",
-            borderRadius: "4px",
-            color: "#c33",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <div
-        style={{
-          backgroundColor: "white",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "30px",
-        }}
-      >
-        {/* Header */}
-        <div style={{ marginBottom: "20px" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "start",
-              marginBottom: "12px",
-            }}
-          >
-            <h1 style={{ margin: 0, fontSize: "28px" }}>{job.title}</h1>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              {job.matchScore && (
-                <span
-                  style={{
-                    padding: "6px 16px",
-                    backgroundColor: "#d4edda",
-                    color: "#155724",
-                    borderRadius: "16px",
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {job.matchScore}% Match
-                </span>
-              )}
-              <span
-                style={{
-                  padding: "6px 16px",
-                  backgroundColor: job.status === "open" ? "#d4edda" : "#f8d7da",
-                  color: job.status === "open" ? "#155724" : "#721c24",
-                  borderRadius: "16px",
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                }}
+    <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+      <div className="max-w-4xl mx-auto">
+        {/* Success Alert */}
+        {submitSuccess && (
+          <div className="mb-6 p-4 rounded-xl bg-[var(--color-success)]/10 border border-[var(--color-success)]/30">
+            <div className="flex items-center gap-3 text-[var(--color-success)]">
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {job.status}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="font-medium">
+                Proposal submitted successfully!
               </span>
             </div>
           </div>
-          <p style={{ color: "#666", margin: 0 }}>
-            Posted on {formatDate(job.createdAt)}
-          </p>
-        </div>
+        )}
 
-        {/* Budget and Details */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-            padding: "20px",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-            marginBottom: "24px",
-          }}
-        >
-          <div>
-            <p
-              style={{
-                margin: "0 0 4px 0",
-                color: "#666",
-                fontSize: "14px",
-              }}
-            >
-              Budget
-            </p>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-              {formatBudget(job.budget)}
-            </p>
-          </div>
-
-          {job.experienceLevel && (
-            <div>
-              <p
-                style={{
-                  margin: "0 0 4px 0",
-                  color: "#666",
-                  fontSize: "14px",
-                }}
+        {/* Error Alert */}
+        {error && job && (
+          <div className="mb-6 p-4 rounded-xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/30">
+            <div className="flex items-center gap-3 text-[var(--color-error)]">
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                Experience Level
-              </p>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textTransform: "capitalize",
-                }}
-              >
-                {job.experienceLevel}
-              </p>
-            </div>
-          )}
-
-          {job.duration && (
-            <div>
-              <p
-                style={{
-                  margin: "0 0 4px 0",
-                  color: "#666",
-                  fontSize: "14px",
-                }}
-              >
-                Project Duration
-              </p>
-              <p style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-                {formatDuration(job.duration)}
-              </p>
-              {job.duration.estimatedHours && (
-                <p
-                  style={{ margin: "4px 0 0 0", color: "#666", fontSize: "12px" }}
-                >
-                  Est. {job.duration.estimatedHours} hours
-                </p>
-              )}
-            </div>
-          )}
-
-          {job.location && (
-            <div>
-              <p
-                style={{
-                  margin: "0 0 4px 0",
-                  color: "#666",
-                  fontSize: "14px",
-                }}
-              >
-                Location
-              </p>
-              <p style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-                {job.location}
-              </p>
-            </div>
-          )}
-
-          {job.category && (
-            <div>
-              <p
-                style={{
-                  margin: "0 0 4px 0",
-                  color: "#666",
-                  fontSize: "14px",
-                }}
-              >
-                Category
-              </p>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  textTransform: "capitalize",
-                }}
-              >
-                {job.category.replace("-", " ")}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Description */}
-        <div style={{ marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>
-            Job Description
-          </h2>
-          <p
-            style={{ lineHeight: "1.6", color: "#333", whiteSpace: "pre-wrap" }}
-          >
-            {job.description}
-          </p>
-        </div>
-
-        {/* Skills */}
-        {job.skills && job.skills.length > 0 && (
-          <div style={{ marginBottom: "24px" }}>
-            <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>
-              Required Skills
-            </h2>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {job.skills.map((skill) => (
-                <span
-                  key={skill}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#e7f3ff",
-                    color: "#0066cc",
-                    borderRadius: "6px",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                >
-                  {skill}
-                </span>
-              ))}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{error}</span>
             </div>
           </div>
         )}
 
-        {/* Send Proposal Button */}
-        {job.status === "open" && !showProposalForm && !submitSuccess && (
-          <div
-            style={{
-              marginTop: "30px",
-              paddingTop: "20px",
-              borderTop: "1px solid #ddd",
-            }}
-          >
-            <button
-              onClick={() => setShowProposalForm(true)}
-              style={{
-                padding: "12px 32px",
-                backgroundColor: "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#218838";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#28a745";
-              }}
-            >
-              Send Proposal
-            </button>
-          </div>
-        )}
+        {/* Job Details Card */}
+        <JobDetailsCard
+          job={job}
+          onSendProposal={() => setShowProposalForm(true)}
+          showProposalButton={!showProposalForm && !submitSuccess}
+        />
 
         {/* Proposal Form */}
-        {showProposalForm && (
-          <div
-            style={{
-              marginTop: "30px",
-              paddingTop: "20px",
-              borderTop: "1px solid #ddd",
-            }}
-          >
-            <h2 style={{ fontSize: "20px", marginBottom: "16px" }}>
-              Submit Your Proposal
-            </h2>
-            <form onSubmit={handleSubmitProposal}>
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  htmlFor="coverLetter"
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Cover Letter * (100-2000 characters)
-                </label>
-                <textarea
-                  id="coverLetter"
-                  name="coverLetter"
-                  value={formData.coverLetter}
-                  onChange={handleInputChange}
-                  required
-                  minLength={100}
-                  maxLength={2000}
-                  rows={6}
-                  placeholder="Explain why you're a good fit for this job (minimum 100 characters)..."
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                  }}
-                />
-                <small style={{ color: "#666", fontSize: "12px" }}>
-                  {formData.coverLetter.length}/2000 characters
-                </small>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Proposed Budget Range *
-                </label>
-                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                  <div style={{ flex: 1 }}>
-                    <label
-                      htmlFor="budgetMin"
-                      style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}
-                    >
-                      Minimum ($)
-                    </label>
-                    <input
-                      type="number"
-                      id="budgetMin"
-                      value={formData.proposedBudget.min}
-                      onChange={(e) => handleBudgetChange(e, "min")}
-                      required
-                      min="0"
-                      step="0.01"
-                      placeholder="Min"
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                    />
-                  </div>
-                  <span style={{ marginTop: "24px" }}>-</span>
-                  <div style={{ flex: 1 }}>
-                    <label
-                      htmlFor="budgetMax"
-                      style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}
-                    >
-                      Maximum ($)
-                    </label>
-                    <input
-                      type="number"
-                      id="budgetMax"
-                      value={formData.proposedBudget.max}
-                      onChange={(e) => handleBudgetChange(e, "max")}
-                      required
-                      min="0"
-                      step="0.01"
-                      placeholder="Max"
-                      style={{
-                        width: "100%",
-                        padding: "12px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  htmlFor="estimatedTime"
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Estimated Time *
-                </label>
-                <select
-                  id="estimatedTime"
-                  name="estimatedTime"
-                  value={formData.estimatedTime}
-                  onChange={handleInputChange}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                    backgroundColor: "white",
-                  }}
-                >
-                  <option value="">Select estimated time</option>
-                  <option value="less-than-month">Less than 1 month</option>
-                  <option value="1-month">1 month</option>
-                  <option value="2-months">2 months</option>
-                  <option value="3-months">3 months</option>
-                  <option value="more-than-3-months">More than 3 months</option>
-                </select>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  htmlFor="availability"
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Availability *
-                </label>
-                <select
-                  id="availability"
-                  name="availability"
-                  value={formData.availability}
-                  onChange={handleInputChange}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                    backgroundColor: "white",
-                  }}
-                >
-                  <option value="">Select availability</option>
-                  <option value="immediately">Immediately</option>
-                  <option value="few-days">In a few days</option>
-                  <option value="1-week">In 1 week</option>
-                  <option value="2-weeks">In 2 weeks</option>
-                </select>
-              </div>
-
-              {/* Portfolio Links */}
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Portfolio Links (Optional, max 5)
-                </label>
-                {formData.portfolioLinks.map((link, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      marginBottom: "8px",
-                      alignItems: "center",
-                    }}
-                  >
-                    <input
-                      type="url"
-                      value={link}
-                      onChange={(e) =>
-                        handlePortfolioLinkChange(index, e.target.value)
-                      }
-                      placeholder="https://example.com/portfolio"
-                      style={{
-                        flex: 1,
-                        padding: "12px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                    />
-                    {formData.portfolioLinks.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removePortfolioLink(index)}
-                        style={{
-                          padding: "8px 12px",
-                          backgroundColor: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                        }}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {formData.portfolioLinks.length < 5 && (
-                  <button
-                    type="button"
-                    onClick={addPortfolioLink}
-                    style={{
-                      padding: "8px 16px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      marginTop: "8px",
-                    }}
-                  >
-                    + Add Portfolio Link
-                  </button>
-                )}
-              </div>
-
-              {/* Questions */}
-              <div style={{ marginBottom: "16px" }}>
-                <label
-                  htmlFor="questions"
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Questions/Clarifications (Optional, max 1000 characters)
-                </label>
-                <textarea
-                  id="questions"
-                  name="questions"
-                  value={formData.questions}
-                  onChange={handleInputChange}
-                  maxLength={1000}
-                  rows={4}
-                  placeholder="Any questions or clarifications about the project?"
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                  }}
-                />
-                <small style={{ color: "#666", fontSize: "12px" }}>
-                  {formData.questions.length}/1000 characters
-                </small>
-              </div>
-
-              {/* Attachments */}
-              <div style={{ marginBottom: "24px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "8px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Attachments (Optional, max 5 files - PDF, DOC, DOCX only)
-                </label>
-
-                {/* File input */}
-                <div style={{ marginBottom: "12px" }}>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    multiple
-                    onChange={handleFileChange}
-                    disabled={formData.attachments.length >= 5}
-                    style={{
-                      padding: "8px",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      width: "100%",
-                      cursor: formData.attachments.length >= 5 ? "not-allowed" : "pointer",
-                    }}
-                  />
-                  <small style={{ color: "#666", fontSize: "12px", display: "block", marginTop: "4px" }}>
-                    {formData.attachments.length}/5 files uploaded
-                  </small>
-                </div>
-
-                {/* List of uploaded files */}
-                {formData.attachments.length > 0 && (
-                  <div style={{ marginTop: "12px" }}>
-                    <p style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>
-                      Uploaded Files:
-                    </p>
-                    {formData.attachments.map((file, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "8px 12px",
-                          backgroundColor: "#f8f9fa",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span style={{ fontSize: "14px" }}>📎</span>
-                          <span style={{ fontSize: "14px" }}>
-                            {file.name} ({(file.size / 1024).toFixed(2)} KB)
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(index)}
-                          style={{
-                            padding: "4px 8px",
-                            backgroundColor: "#dc3545",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: "flex", gap: "12px" }}>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  style={{
-                    padding: "12px 32px",
-                    backgroundColor: "#28a745",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    opacity: submitting ? 0.6 : 1,
-                  }}
-                >
-                  {submitting ? "Submitting..." : "Submit Proposal"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowProposalForm(false)}
-                  disabled={submitting}
-                  style={{
-                    padding: "12px 32px",
-                    backgroundColor: "#6c757d",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    opacity: submitting ? 0.6 : 1,
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+        {showProposalForm && jobId && (
+          <div className="mt-6 p-8 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)]">
+            <ProposalForm
+              jobId={jobId}
+              onSuccess={handleProposalSuccess}
+              onCancel={() => setShowProposalForm(false)}
+              onError={handleProposalError}
+            />
           </div>
         )}
-      </div>
 
-      {/* Additional Info */}
-      <div style={{ marginTop: "16px", fontSize: "12px", color: "#666" }}>
-        <p>Last updated: {formatDate(job.updatedAt)}</p>
+        {/* Footer */}
+        <p className="mt-4 text-xs text-[var(--color-text-tertiary)]">
+          Last updated: {formatDate(job.updatedAt)}
+        </p>
       </div>
     </div>
   );

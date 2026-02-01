@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import apiClient from "../../utils/api";
 import { useUser } from "../../contexts/UserContext";
 
@@ -27,7 +27,7 @@ interface Proposal {
 }
 
 export default function MyProposals() {
-  const { user, isFreelancer } = useUser();
+  const { isFreelancer } = useUser();
   const navigate = useNavigate();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,10 +47,7 @@ export default function MyProposals() {
       setLoading(true);
       setError("");
 
-      // First, get all proposals for this freelancer
       const response = await apiClient.get(`/proposal/my-proposals`);
-
-      // The response should contain proposals with populated job data
       setProposals(response.data.proposals || []);
     } catch (err: any) {
       console.error("Error fetching proposals:", err);
@@ -72,16 +69,16 @@ export default function MyProposals() {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusClasses = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return { bg: "#fff3cd", color: "#856404", border: "#ffc107" };
+        return "bg-[var(--color-warning)]/10 text-[var(--color-warning)] border-[var(--color-warning)]/30";
       case "accepted":
-        return { bg: "#d4edda", color: "#155724", border: "#28a745" };
+        return "bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/30";
       case "rejected":
-        return { bg: "#f8d7da", color: "#721c24", border: "#dc3545" };
+        return "bg-[var(--color-error)]/10 text-[var(--color-error)] border-[var(--color-error)]/30";
       default:
-        return { bg: "#e7f3ff", color: "#004085", border: "#007bff" };
+        return "bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)]/30";
     }
   };
 
@@ -108,362 +105,186 @@ export default function MyProposals() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
-        <h1>My Proposals</h1>
-        <p>Loading your proposals...</p>
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-5xl mx-auto">
+          <div className="animate-pulse space-y-4 mb-8">
+            <div className="h-10 bg-[var(--color-muted)] rounded-lg w-48"></div>
+            <div className="h-5 bg-[var(--color-muted)] rounded w-64"></div>
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse p-6 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)]">
+                <div className="h-6 bg-[var(--color-muted)] rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-[var(--color-muted)] rounded w-1/2 mb-4"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="h-12 bg-[var(--color-muted)] rounded"></div>
+                  <div className="h-12 bg-[var(--color-muted)] rounded"></div>
+                  <div className="h-12 bg-[var(--color-muted)] rounded"></div>
+                  <div className="h-12 bg-[var(--color-muted)] rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
-        <h1 style={{ margin: 0 }}>My Proposals</h1>
-        <Link
-          to="/"
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            textDecoration: "none",
-            borderRadius: "4px",
-            fontSize: "14px",
-          }}
-        >
-          Back to Home
-        </Link>
-      </div>
-
-      {error && (
-        <div
-          style={{
-            padding: "12px",
-            marginBottom: "20px",
-            backgroundColor: "#fee",
-            border: "1px solid #f88",
-            borderRadius: "4px",
-            color: "#c33",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {proposals.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-          }}
-        >
-          <h2>No Proposals Yet</h2>
-          <p style={{ color: "#666", marginBottom: "20px" }}>
-            You haven't sent any proposals yet. Browse available jobs and start
-            applying!
+    <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-text-primary)] tracking-tight">
+            My Proposals
+          </h1>
+          <p className="mt-2 text-lg text-[var(--color-text-secondary)]">
+            {proposals.length > 0
+              ? `You have sent ${proposals.length} proposal${proposals.length !== 1 ? "s" : ""}`
+              : "Track your submitted proposals"}
           </p>
-          <Link
-            to="/"
-            style={{
-              display: "inline-block",
-              padding: "10px 20px",
-              backgroundColor: "#28a745",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "6px",
-              fontWeight: "bold",
-            }}
-          >
-            Browse Jobs
-          </Link>
         </div>
-      ) : (
-        <div>
-          <p style={{ color: "#666", marginBottom: "20px" }}>
-            You have sent {proposals.length} proposal
-            {proposals.length !== 1 ? "s" : ""}
-          </p>
 
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            {proposals.map((proposal) => {
-              const statusStyle = getStatusColor(proposal.status);
-              return (
-                <div
-                  key={proposal._id}
-                  style={{
-                    backgroundColor: "white",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    padding: "20px",
-                    transition: "box-shadow 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 12px rgba(0,0,0,0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  {/* Header */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "start",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "20px" }}>
-                        {proposal.jobId.title}
-                      </h3>
-                      <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
-                        Submitted on {formatDate(proposal.createdAt)}
-                      </p>
-                    </div>
-                    <span
-                      style={{
-                        padding: "6px 16px",
-                        backgroundColor: statusStyle.bg,
-                        color: statusStyle.color,
-                        border: `1px solid ${statusStyle.border}`,
-                        borderRadius: "16px",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {proposal.status}
-                    </span>
-                  </div>
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-[var(--color-error)]">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{error}</span>
+            </div>
+          </div>
+        )}
 
-                  {/* Job Description Preview */}
-                  {proposal.jobId.description && (
-                    <div
-                      style={{
-                        marginBottom: "16px",
-                        padding: "12px",
-                        backgroundColor: "#f8f9fa",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "14px",
-                          color: "#666",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        {proposal.jobId.description.length > 200
-                          ? proposal.jobId.description.substring(0, 200) + "..."
-                          : proposal.jobId.description}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Proposal Details Grid */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: "16px",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <div>
-                      <p
-                        style={{
-                          margin: "0 0 4px 0",
-                          fontSize: "12px",
-                          color: "#666",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Proposed Budget
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        ${proposal.proposedBudget.min} - $
-                        {proposal.proposedBudget.max}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p
-                        style={{
-                          margin: "0 0 4px 0",
-                          fontSize: "12px",
-                          color: "#666",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Estimated Time
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {formatEstimatedTime(proposal.estimatedTime)}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p
-                        style={{
-                          margin: "0 0 4px 0",
-                          fontSize: "12px",
-                          color: "#666",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Availability
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {formatAvailability(proposal.availability)}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p
-                        style={{
-                          margin: "0 0 4px 0",
-                          fontSize: "12px",
-                          color: "#666",
-                          fontWeight: "500",
-                        }}
-                      >
-                        Job Status
-                      </p>
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                          textTransform: "capitalize",
-                          color:
-                            proposal.jobId.status === "open"
-                              ? "#28a745"
-                              : "#dc3545",
-                        }}
-                      >
-                        {proposal.jobId.status}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Cover Letter Preview */}
-                  <div style={{ marginBottom: "16px" }}>
-                    <p
-                      style={{
-                        margin: "0 0 8px 0",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Cover Letter
+        {/* Empty State */}
+        {proposals.length === 0 ? (
+          <div className="p-10 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--color-muted)] flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-[var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+              No Proposals Yet
+            </h3>
+            <p className="mt-2 text-[var(--color-text-secondary)] max-w-md mx-auto mb-6">
+              You haven't sent any proposals yet. Browse available jobs and start applying!
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              className="px-5 py-2.5 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+            >
+              Browse Jobs
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {proposals.map((proposal) => (
+              <div
+                key={proposal._id}
+                className="p-6 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] transition-all hover:border-[var(--color-primary)] hover:shadow-lg group"
+              >
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                      {proposal.jobId.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-[var(--color-text-tertiary)]">
+                      Submitted on {formatDate(proposal.createdAt)}
                     </p>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "14px",
-                        lineHeight: "1.6",
-                        color: "#333",
-                      }}
-                    >
-                      {proposal.coverLetter.length > 300
-                        ? proposal.coverLetter.substring(0, 300) + "..."
-                        : proposal.coverLetter}
+                  </div>
+                  <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide border ${getStatusClasses(proposal.status)}`}>
+                    {proposal.status}
+                  </span>
+                </div>
+
+                {/* Job Description Preview */}
+                {proposal.jobId.description && (
+                  <div className="mb-4 p-4 rounded-xl bg-[var(--color-muted)]">
+                    <p className="text-sm text-[var(--color-text-secondary)] italic line-clamp-2">
+                      {proposal.jobId.description.length > 200
+                        ? proposal.jobId.description.substring(0, 200) + "..."
+                        : proposal.jobId.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Proposal Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="p-3 rounded-xl bg-[var(--color-muted)]">
+                    <p className="text-xs text-[var(--color-text-tertiary)] font-medium mb-1">
+                      Proposed Budget
+                    </p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                      ${proposal.proposedBudget.min} - ${proposal.proposedBudget.max}
                     </p>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div
-                    style={{ display: "flex", gap: "12px", marginTop: "16px" }}
-                  >
-                    <button
-                      onClick={() =>
-                        navigate(`/matched-job/${proposal.jobId._id}`)
-                      }
-                      style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#007bff",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#0056b3";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#007bff";
-                      }}
-                    >
-                      View Job Details
-                    </button>
+                  <div className="p-3 rounded-xl bg-[var(--color-muted)]">
+                    <p className="text-xs text-[var(--color-text-tertiary)] font-medium mb-1">
+                      Estimated Time
+                    </p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                      {formatEstimatedTime(proposal.estimatedTime)}
+                    </p>
+                  </div>
 
-                    {/* Only show edit button for pending proposals */}
-                    {proposal.status === "pending" && (
-                      <button
-                        onClick={() =>
-                          navigate(`/edit-proposal/${proposal._id}`)
-                        }
-                        style={{
-                          padding: "8px 16px",
-                          backgroundColor: "#ffc107",
-                          color: "#000",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#e0a800";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "#ffc107";
-                        }}
-                      >
-                        Edit Proposal
-                      </button>
-                    )}
+                  <div className="p-3 rounded-xl bg-[var(--color-muted)]">
+                    <p className="text-xs text-[var(--color-text-tertiary)] font-medium mb-1">
+                      Availability
+                    </p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                      {formatAvailability(proposal.availability)}
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-[var(--color-muted)]">
+                    <p className="text-xs text-[var(--color-text-tertiary)] font-medium mb-1">
+                      Job Status
+                    </p>
+                    <p className={`text-sm font-semibold capitalize ${proposal.jobId.status === "open" ? "text-[var(--color-success)]" : "text-[var(--color-error)]"}`}>
+                      {proposal.jobId.status}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Cover Letter Preview */}
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
+                    Cover Letter
+                  </p>
+                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed line-clamp-3">
+                    {proposal.coverLetter.length > 300
+                      ? proposal.coverLetter.substring(0, 300) + "..."
+                      : proposal.coverLetter}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-[var(--color-border)]">
+                  <button
+                    onClick={() => navigate(`/matched-job/${proposal.jobId._id}`)}
+                    className="px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+                  >
+                    View Job Details
+                  </button>
+
+                  {proposal.status === "pending" && (
+                    <button
+                      onClick={() => navigate(`/edit-proposal/${proposal._id}`)}
+                      className="px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-muted)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-colors"
+                    >
+                      Edit Proposal
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
