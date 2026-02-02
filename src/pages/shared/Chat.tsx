@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../../utils/api";
 import { useUser } from "../../contexts/UserContext";
 import {
@@ -328,354 +328,464 @@ export default function Chat() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-        <p>Loading conversation...</p>
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Back button skeleton */}
+          <div className="mb-6">
+            <div className="h-5 w-32 bg-[var(--color-muted)] rounded animate-pulse"></div>
+          </div>
+
+          {/* Chat card skeleton */}
+          <div className="rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden">
+            {/* Header skeleton */}
+            <div className="p-6 border-b border-[var(--color-border)]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[var(--color-muted)] animate-pulse"></div>
+                  <div className="space-y-2">
+                    <div className="h-5 w-32 bg-[var(--color-muted)] rounded animate-pulse"></div>
+                    <div className="h-3 w-20 bg-[var(--color-muted)] rounded animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="h-10 w-24 bg-[var(--color-muted)] rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+
+            {/* Messages skeleton */}
+            <div className="p-6 space-y-4 min-h-[400px]">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`h-16 rounded-2xl bg-[var(--color-muted)] animate-pulse ${
+                      i % 2 === 0 ? "w-2/3" : "w-1/2"
+                    }`}
+                  ></div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input skeleton */}
+            <div className="p-6 border-t border-[var(--color-border)]">
+              <div className="flex gap-3">
+                <div className="flex-1 h-12 bg-[var(--color-muted)] rounded-xl animate-pulse"></div>
+                <div className="h-12 w-24 bg-[var(--color-muted)] rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error && messages.length === 0) {
     return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-        <Link
-          to="/my-jobs"
-          style={{
-            display: "inline-block",
-            marginBottom: "20px",
-            color: "#007bff",
-            textDecoration: "none",
-          }}
-        >
-          &larr; Back to My Jobs
-        </Link>
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "#fee",
-            border: "1px solid #f88",
-            borderRadius: "4px",
-            color: "#c33",
-          }}
-        >
-          {error}
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Back button */}
+          <button
+            onClick={() => navigate("/my-jobs")}
+            className="inline-flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors mb-6"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to My Jobs
+          </button>
+
+          {/* Error state */}
+          <div className="p-8 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--color-error)]/10 flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-[var(--color-error)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+              Failed to Load Conversation
+            </h3>
+            <p className="text-[var(--color-error)] mb-6">{error}</p>
+            <button
+              onClick={() => navigate("/my-jobs")}
+              className="px-5 py-2.5 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+            >
+              Back to My Jobs
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-      <Link
-        to="/my-jobs"
-        style={{
-          display: "inline-block",
-          marginBottom: "20px",
-          color: "#007bff",
-          textDecoration: "none",
-          fontSize: "14px",
-        }}
-      >
-        &larr; Back to My Jobs
-      </Link>
-
-      <div
-        style={{
-          backgroundColor: "white",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "20px",
-        }}
-      >
-        {/* Chat Header with Profile */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-            paddingBottom: "16px",
-            borderBottom: "1px solid #ddd",
-          }}
+    <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+      <div className="max-w-4xl mx-auto">
+        {/* Back button */}
+        <button
+          onClick={() => navigate("/my-jobs")}
+          className="inline-flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors mb-6"
         >
-          {otherParticipant ? (
-            <div
-              onClick={user?.role === "client" ? handleViewProfile : undefined}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                cursor: user?.role === "client" ? "pointer" : "default",
-              }}
-            >
-              <div
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  borderRadius: "50%",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  flexShrink: 0,
-                }}
-              >
-                {otherParticipant.firstName?.[0] ||
-                  otherParticipant.lastName[0]}
-              </div>
-              <div>
-                <div
-                  style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}
-                >
-                  {otherParticipant.firstName || ""} {otherParticipant.lastName}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div style={{ fontSize: "18px", fontWeight: "600", color: "#333" }}>
-              Chat
-            </div>
-          )}
-
-          {user?.role === "client" && otherParticipant && (
-            isAlreadyHired && contractId ? (
-              <button
-                onClick={() => navigate(`/contract/${contractId}`)}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = "#0056b3";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = "#007bff";
-                }}
-              >
-                View Contract
-              </button>
-            ) : (
-              <button
-                onClick={handleHire}
-                disabled={hiring}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: hiring ? "#6c757d" : "#28a745",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: hiring ? "not-allowed" : "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onMouseOver={(e) => {
-                  if (!hiring) {
-                    e.currentTarget.style.backgroundColor = "#218838";
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!hiring) {
-                    e.currentTarget.style.backgroundColor = "#28a745";
-                  }
-                }}
-              >
-                {hiring ? "Hiring..." : "Hire"}
-              </button>
-            )
-          )}
-        </div>
-
-        {error && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "16px",
-              backgroundColor: "#fee",
-              border: "1px solid #f88",
-              borderRadius: "4px",
-              color: "#c33",
-            }}
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            {error}
-          </div>
-        )}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to My Jobs
+        </button>
 
-        {/* Messages */}
-        <div
-          style={{
-            minHeight: "400px",
-            maxHeight: "500px",
-            overflowY: "auto",
-            border: "1px solid #ddd",
-            borderRadius: "4px",
-            padding: "16px",
-            marginBottom: "16px",
-            backgroundColor: "#f9f9f9",
-          }}
-        >
-          {/* Pagination info */}
-          {pagination && pagination.total > 0 && (
-            <div
-              style={{
-                textAlign: "center",
-                marginBottom: "12px",
-                fontSize: "12px",
-                color: "#666",
-              }}
-            >
-              Showing {messages.length} of {pagination.total} messages
-              {pagination.hasMore && (
-                <button
-                  onClick={() => fetchMessages(pagination.page + 1)}
-                  disabled={loading}
-                  style={{
-                    marginLeft: "8px",
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
+        {/* Chat Card */}
+        <div className="rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] overflow-hidden shadow-sm">
+          {/* Chat Header */}
+          <div className="p-6 border-b border-[var(--color-border)]">
+            <div className="flex items-center justify-between">
+              {otherParticipant ? (
+                <div
+                  onClick={user?.role === "client" ? handleViewProfile : undefined}
+                  className={`flex items-center gap-4 ${
+                    user?.role === "client"
+                      ? "cursor-pointer hover:opacity-80 transition-opacity"
+                      : ""
+                  }`}
                 >
-                  Load More
-                </button>
+                  <div className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                    {otherParticipant.firstName?.[0] ||
+                      otherParticipant.lastName[0]}
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                      {otherParticipant.firstName || ""}{" "}
+                      {otherParticipant.lastName}
+                    </h2>
+                    {user?.role === "client" && (
+                      <p className="text-sm text-[var(--color-text-tertiary)]">
+                        Click to view profile
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                  Chat
+                </h2>
               )}
+
+              {user?.role === "client" &&
+                otherParticipant &&
+                (isAlreadyHired && contractId ? (
+                  <button
+                    onClick={() => navigate(`/contract/${contractId}`)}
+                    className="px-5 py-2.5 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+                  >
+                    View Contract
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleHire}
+                    disabled={hiring}
+                    className="px-5 py-2.5 rounded-xl font-semibold bg-[var(--color-success)] text-white hover:bg-[var(--color-success-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {hiring ? "Hiring..." : "Hire"}
+                  </button>
+                ))}
+            </div>
+          </div>
+
+          {/* Error Alert */}
+          {error && (
+            <div className="mx-6 mt-6 p-4 rounded-xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/30">
+              <div className="flex items-center gap-3 text-[var(--color-error)]">
+                <svg
+                  className="w-5 h-5 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto text-[var(--color-error)] hover:text-[var(--color-error)]/80"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
 
-          {messages.length === 0 ? (
-            <p style={{ textAlign: "center", color: "#666" }}>
-              No messages yet. Start the conversation!
-            </p>
-          ) : (
-            messages.map((message) => {
-              const isOwnMessage = message.senderId?._id === user?._id;
-              const senderName = message.senderId?.lastName || "Unknown User";
-
-              return (
-                <div
-                  key={message._id}
-                  style={{
-                    marginBottom: "12px",
-                    display: "flex",
-                    justifyContent: isOwnMessage ? "flex-end" : "flex-start",
-                  }}
-                >
-                  <div
-                    style={{
-                      maxWidth: "70%",
-                      padding: "12px",
-                      borderRadius: "8px",
-                      backgroundColor: isOwnMessage ? "#007bff" : "#e9ecef",
-                      color: isOwnMessage ? "white" : "#333",
-                    }}
+          {/* Messages Container */}
+          <div className="p-6">
+            {/* Pagination info */}
+            {pagination && pagination.total > 0 && (
+              <div className="text-center mb-4">
+                <span className="text-sm text-[var(--color-text-tertiary)]">
+                  Showing {messages.length} of {pagination.total} messages
+                </span>
+                {pagination.hasMore && (
+                  <button
+                    onClick={() => fetchMessages(pagination.page + 1)}
+                    disabled={loading}
+                    className="ml-3 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--color-muted)] text-[var(--color-text-secondary)] hover:bg-[var(--color-border)] transition-colors disabled:opacity-50"
                   >
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                        opacity: 0.8,
-                        fontWeight: "bold",
-                      }}
+                    Load More
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Messages */}
+            <div className="min-h-[400px] max-h-[500px] overflow-y-auto rounded-xl bg-[var(--color-muted)] p-4 space-y-3">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-[400px] text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-[var(--color-background)] flex items-center justify-center mb-4">
+                    <svg
+                      className="w-8 h-8 text-[var(--color-text-tertiary)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      {senderName}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-[var(--color-text-secondary)] font-medium">
+                    No messages yet
+                  </p>
+                  <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
+                    Start the conversation!
+                  </p>
+                </div>
+              ) : (
+                messages.map((message) => {
+                  const isOwnMessage = message.senderId?._id === user?._id;
+                  const senderName = message.senderId?.lastName || "Unknown User";
+
+                  return (
+                    <div
+                      key={message._id}
+                      className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[70%] px-4 py-3 rounded-2xl ${
+                          isOwnMessage
+                            ? "bg-[var(--color-primary)] text-white rounded-br-md"
+                            : "bg-[var(--color-card)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-bl-md"
+                        }`}
+                      >
+                        <div
+                          className={`text-xs font-semibold mb-1 ${
+                            isOwnMessage
+                              ? "text-white/80"
+                              : "text-[var(--color-text-tertiary)]"
+                          }`}
+                        >
+                          {senderName}
+                        </div>
+                        <div className="text-sm leading-relaxed">
+                          {message.content}
+                        </div>
+                        <div
+                          className={`flex items-center justify-end gap-1.5 mt-2 text-xs ${
+                            isOwnMessage
+                              ? "text-white/70"
+                              : "text-[var(--color-text-tertiary)]"
+                          }`}
+                        >
+                          <span>{formatDate(message.createdAt)}</span>
+                          {isOwnMessage && (
+                            <span className="font-bold">
+                              {message.readAt ? (
+                                <svg
+                                  className="w-4 h-4 text-white/90"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              ) : message.deliveredAt ? (
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ marginBottom: "4px" }}>{message.content}</div>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        opacity: 0.7,
-                        textAlign: "right",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "flex-end",
-                        gap: "6px",
-                      }}
-                    >
-                      <span>{formatDate(message.createdAt)}</span>
-                      {isOwnMessage && (
-                        <span style={{ fontSize: "10px", fontWeight: "bold" }}>
-                          {message.readAt
-                            ? "✓✓"
-                            : message.deliveredAt
-                            ? "✓✓"
-                            : "✓"}
-                        </span>
-                      )}
+                  );
+                })
+              )}
+
+              {/* Typing indicator */}
+              {otherUserTyping && otherParticipant && (
+                <div className="flex justify-start">
+                  <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-[var(--color-card)] border border-[var(--color-border)]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[var(--color-text-tertiary)] italic">
+                        {otherParticipant.firstName || otherParticipant.lastName}{" "}
+                        is typing
+                      </span>
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-bounce"></span>
+                        <span
+                          className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-bounce"
+                          style={{ animationDelay: "0.1s" }}
+                        ></span>
+                        <span
+                          className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-bounce"
+                          style={{ animationDelay: "0.2s" }}
+                        ></span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              );
-            })
-          )}
+              )}
 
-          {/* Typing indicator */}
-          {otherUserTyping && otherParticipant && (
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#666",
-                fontStyle: "italic",
-                marginTop: "8px",
-              }}
-            >
-              {otherParticipant.firstName || otherParticipant.lastName} is
-              typing...
+              <div ref={messagesEndRef} />
             </div>
-          )}
+          </div>
 
-          <div ref={messagesEndRef} />
+          {/* Message Input */}
+          <div className="p-6 border-t border-[var(--color-border)]">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={handleTyping}
+                placeholder="Type your message..."
+                disabled={sending}
+                className="flex-1 px-4 py-3 rounded-xl bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)] transition-all disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={sending || !newMessage.trim()}
+                className="px-6 py-3 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              >
+                {sending ? (
+                  <>
+                    <svg
+                      className="w-5 h-5 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Sending
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      />
+                    </svg>
+                    Send
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-
-        {/* Message Input */}
-        <form
-          onSubmit={handleSendMessage}
-          style={{ display: "flex", gap: "8px" }}
-        >
-          <input
-            type="text"
-            value={newMessage}
-            onChange={handleTyping}
-            placeholder="Type your message..."
-            disabled={sending}
-            style={{
-              flex: 1,
-              padding: "12px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-              fontSize: "14px",
-            }}
-          />
-          <button
-            type="submit"
-            disabled={sending || !newMessage.trim()}
-            style={{
-              padding: "12px 24px",
-              backgroundColor:
-                sending || !newMessage.trim() ? "#ccc" : "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "14px",
-              fontWeight: "bold",
-              cursor: sending || !newMessage.trim() ? "not-allowed" : "pointer",
-            }}
-          >
-            {sending ? "Sending..." : "Send"}
-          </button>
-        </form>
       </div>
     </div>
   );
