@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from "../../utils/api";
+import { useUser } from "../../contexts/UserContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { refreshUser } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +21,7 @@ export default function Login() {
         password,
       });
       console.log("login response", res.data);
+      await refreshUser();
       navigate("/");
     } catch (err: any) {
       console.error(err);
