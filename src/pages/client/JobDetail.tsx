@@ -66,6 +66,7 @@ export default function JobDetail() {
   const [updatingProposal, setUpdatingProposal] = useState<string | null>(null);
   const [loadingChat, setLoadingChat] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (jobId) {
@@ -121,7 +122,6 @@ export default function JobDetail() {
     try {
       setLoadingProposals(true);
 
-      // Fetch each proposal by its ID
       const proposalPromises = job.proposals.map((proposalId) =>
         apiClient.get(`/proposal/${proposalId}`)
       );
@@ -151,7 +151,6 @@ export default function JobDetail() {
     try {
       setUpdatingProposal(proposalId);
 
-      // Use separate endpoints for accept and reject
       const endpoint =
         newStatus === "accepted"
           ? `/proposal/${proposalId}/accept`
@@ -159,14 +158,12 @@ export default function JobDetail() {
 
       await apiClient.patch(endpoint);
 
-      // Update the proposal in the local state
       setProposals((prevProposals) =>
         prevProposals.map((p) =>
           p._id === proposalId ? { ...p, status: newStatus } : p
         )
       );
 
-      // Optionally refresh job details to update status
       await fetchJobDetail();
     } catch (err: any) {
       console.error("Error updating proposal:", err);
@@ -184,21 +181,17 @@ export default function JobDetail() {
   const handleDelete = async () => {
     if (!jobId) return;
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this job? This action cannot be undone."
-    );
-
-    if (!confirmDelete) return;
-
     try {
       setDeleting(true);
       await apiClient.delete(`/job/${jobId}`);
+      setShowDeleteModal(false);
       navigate("/jobs");
     } catch (err: any) {
       console.error("Error deleting job:", err);
       setError(
         err.response?.data?.message || "Failed to delete job. Please try again."
       );
+      setShowDeleteModal(false);
       setDeleting(false);
     }
   };
@@ -255,526 +248,294 @@ export default function JobDetail() {
     return availabilityMap[availability] || availability;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusClasses = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return { bg: "#fff3cd", color: "#856404", border: "#ffc107" };
+        return "bg-[var(--color-warning)]/10 text-[var(--color-warning)]";
       case "accepted":
-        return { bg: "#d4edda", color: "#155724", border: "#28a745" };
+        return "bg-[var(--color-success)]/10 text-[var(--color-success)]";
       case "rejected":
-        return { bg: "#f8d7da", color: "#721c24", border: "#dc3545" };
+        return "bg-[var(--color-error)]/10 text-[var(--color-error)]";
       default:
-        return { bg: "#e7f3ff", color: "#004085", border: "#007bff" };
+        return "bg-[var(--color-primary)]/10 text-[var(--color-primary)]";
     }
   };
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-        <Link
-          to="/jobs"
-          style={{
-            display: "inline-block",
-            marginBottom: "20px",
-            color: "#007bff",
-            textDecoration: "none",
-          }}
-        >
-          &larr; Back to Jobs
-        </Link>
-        <p>Loading job details...</p>
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="h-5 w-28 rounded-lg bg-[var(--color-muted)] animate-pulse mb-8" />
+          <div className="rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] p-8 animate-pulse space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="h-8 w-80 rounded-lg bg-[var(--color-muted)]" />
+              <div className="h-7 w-20 rounded-full bg-[var(--color-muted)]" />
+            </div>
+            <div className="h-4 w-40 rounded bg-[var(--color-muted)]" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="p-5 rounded-xl bg-[var(--color-muted)] h-20" />
+              ))}
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-full rounded bg-[var(--color-muted)]" />
+              <div className="h-4 w-full rounded bg-[var(--color-muted)]" />
+              <div className="h-4 w-3/4 rounded bg-[var(--color-muted)]" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !job) {
     return (
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-        <Link
-          to="/jobs"
-          style={{
-            display: "inline-block",
-            marginBottom: "20px",
-            color: "#007bff",
-            textDecoration: "none",
-          }}
-        >
-          &larr; Back to Jobs
-        </Link>
-        <div
-          style={{
-            padding: "10px",
-            marginBottom: "20px",
-            backgroundColor: "#fee",
-            border: "1px solid #f88",
-            borderRadius: "4px",
-            color: "#c33",
-          }}
-        >
-          {error || "Job not found"}
+      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <Link
+            to="/jobs"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors mb-8"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            Back to Jobs
+          </Link>
+          <div className="rounded-2xl bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 p-6">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 w-10 h-10 shrink-0 rounded-xl bg-[var(--color-error)]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[var(--color-error)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-[var(--color-error)]">
+                  {error || "Job not found"}
+                </p>
+                <button
+                  onClick={() => navigate("/jobs")}
+                  className="mt-3 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-hover)] transition-colors"
+                >
+                  View All Jobs
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={() => navigate("/jobs")}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          View All Jobs
-        </button>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px" }}>
-      <Link
-        to="/jobs"
-        style={{
-          display: "inline-block",
-          marginBottom: "20px",
-          color: "#007bff",
-          textDecoration: "none",
-          fontSize: "14px",
-        }}
-      >
-        &larr; Back to Jobs
-      </Link>
-
-      <div
-        style={{
-          backgroundColor: "white",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "30px",
-        }}
-      >
-        {/* Header */}
-        <div style={{ marginBottom: "20px" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "start",
-              marginBottom: "12px",
-            }}
-          >
-            <h1 style={{ margin: 0, fontSize: "28px" }}>{job.title}</h1>
-            <span
-              style={{
-                padding: "6px 16px",
-                backgroundColor: job.status === "open" ? "#d4edda" : "#f8d7da",
-                color: job.status === "open" ? "#155724" : "#721c24",
-                borderRadius: "16px",
-                fontSize: "14px",
-                fontWeight: "bold",
-                textTransform: "uppercase",
-              }}
-            >
-              {job.status}
-            </span>
-          </div>
-          <p style={{ color: "#666", margin: 0 }}>
-            Posted on {formatDate(job.createdAt)}
-          </p>
-        </div>
-
-        {/* Budget and Details */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-            padding: "20px",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-            marginBottom: "24px",
-          }}
+    <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+      <div className="max-w-4xl mx-auto">
+        {/* Back Link */}
+        <Link
+          to="/jobs"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors mb-8"
         >
-          <div>
-            <p
-              style={{
-                margin: "0 0 4px 0",
-                color: "#666",
-                fontSize: "14px",
-              }}
-            >
-              Budget
-            </p>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-              {formatBudget(job.budget)}
-            </p>
-            <p style={{ margin: "4px 0 0 0", color: "#666", fontSize: "12px" }}>
-              {job.budget.type === "fixed" ? "Fixed Price" : "Hourly Rate"}
-            </p>
-          </div>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+          Back to Jobs
+        </Link>
 
-          <div>
-            <p
-              style={{
-                margin: "0 0 4px 0",
-                color: "#666",
-                fontSize: "14px",
-              }}
-            >
-              Experience Level
-            </p>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "18px",
-                fontWeight: "bold",
-                textTransform: "capitalize",
-              }}
-            >
-              {job.experienceLevel}
-            </p>
-          </div>
-
-          <div>
-            <p
-              style={{
-                margin: "0 0 4px 0",
-                color: "#666",
-                fontSize: "14px",
-              }}
-            >
-              Project Duration
-            </p>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-              {formatDuration(job.duration)}
-            </p>
-            {job.duration.estimatedHours && (
-              <p
-                style={{ margin: "4px 0 0 0", color: "#666", fontSize: "12px" }}
-              >
-                Est. {job.duration.estimatedHours} hours
-              </p>
-            )}
-          </div>
-
-          <div>
-            <p
-              style={{
-                margin: "0 0 4px 0",
-                color: "#666",
-                fontSize: "14px",
-              }}
-            >
-              Category
-            </p>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "18px",
-                fontWeight: "bold",
-                textTransform: "capitalize",
-              }}
-            >
-              {job.category.replace("-", " ")}
-            </p>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div style={{ marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>
-            Job Description
-          </h2>
-          <p
-            style={{ lineHeight: "1.6", color: "#333", whiteSpace: "pre-wrap" }}
-          >
-            {job.description}
-          </p>
-        </div>
-
-        {/* Skills */}
-        <div style={{ marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>
-            Required Skills
-          </h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {job.skills.map((skill) => (
+        {/* Main Card */}
+        <div className="rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] p-8">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">
+                {job.title}
+              </h1>
               <span
-                key={skill}
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#e7f3ff",
-                  color: "#0066cc",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                  job.status === "open"
+                    ? "bg-[var(--color-success)]/10 text-[var(--color-success)]"
+                    : "bg-[var(--color-error)]/10 text-[var(--color-error)]"
+                }`}
               >
-                {skill}
+                {job.status}
               </span>
-            ))}
+            </div>
+            <p className="text-sm text-[var(--color-text-tertiary)]">
+              Posted on {formatDate(job.createdAt)}
+            </p>
           </div>
-        </div>
 
-        {/* Proposals Section */}
-        {job.proposals && job.proposals.length > 0 && (
-          <div style={{ marginBottom: "24px" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
-              }}
-            >
-              <h2 style={{ fontSize: "20px", margin: 0 }}>
-                Proposals ({job.proposals.length})
-              </h2>
-              {!showProposals && (
-                <button
-                  onClick={fetchProposals}
-                  disabled={loadingProposals}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#28a745",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: loadingProposals ? "not-allowed" : "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    opacity: loadingProposals ? 0.6 : 1,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!loadingProposals) {
-                      e.currentTarget.style.backgroundColor = "#218838";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!loadingProposals) {
-                      e.currentTarget.style.backgroundColor = "#28a745";
-                    }
-                  }}
-                >
-                  {loadingProposals ? "Loading..." : "View Proposals"}
-                </button>
-              )}
-              {showProposals && (
-                <button
-                  onClick={() => setShowProposals(false)}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#6c757d",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#5a6268";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#6c757d";
-                  }}
-                >
-                  Hide Proposals
-                </button>
+          {/* Details Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="p-5 rounded-xl bg-[var(--color-muted)]">
+              <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-1">
+                Budget
+              </p>
+              <p className="text-lg font-bold text-[var(--color-text-primary)]">
+                {formatBudget(job.budget)}
+              </p>
+              <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">
+                {job.budget.type === "fixed" ? "Fixed Price" : "Hourly Rate"}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[var(--color-muted)]">
+              <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-1">
+                Experience Level
+              </p>
+              <p className="text-lg font-bold text-[var(--color-text-primary)] capitalize">
+                {job.experienceLevel}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[var(--color-muted)]">
+              <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-1">
+                Project Duration
+              </p>
+              <p className="text-lg font-bold text-[var(--color-text-primary)]">
+                {formatDuration(job.duration)}
+              </p>
+              {job.duration.estimatedHours && (
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">
+                  Est. {job.duration.estimatedHours} hours
+                </p>
               )}
             </div>
 
-            {showProposals && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                }}
-              >
-                {proposals.map((proposal) => {
-                  const statusStyle = getStatusColor(proposal.status);
-                  const isUpdating = updatingProposal === proposal._id;
-                  return (
-                    <div
-                      key={proposal._id}
-                      style={{
-                        backgroundColor: "#f8f9fa",
-                        border: "1px solid #dee2e6",
-                        borderRadius: "8px",
-                        padding: "20px",
-                      }}
-                    >
-                      {/* Proposal Header */}
+            <div className="p-5 rounded-xl bg-[var(--color-muted)]">
+              <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-1">
+                Category
+              </p>
+              <p className="text-lg font-bold text-[var(--color-text-primary)] capitalize">
+                {job.category.replace("-", " ")}
+              </p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-3">
+              Job Description
+            </h2>
+            <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
+              {job.description}
+            </p>
+          </div>
+
+          {/* Skills */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-3">
+              Required Skills
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {job.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="px-3 py-1.5 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-sm font-medium"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Proposals Section */}
+          {job.proposals && job.proposals.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                  Proposals ({job.proposals.length})
+                </h2>
+                {!showProposals ? (
+                  <button
+                    onClick={fetchProposals}
+                    disabled={loadingProposals}
+                    className="px-5 py-2.5 rounded-xl bg-[var(--color-success)] text-white text-sm font-medium hover:bg-[var(--color-success-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loadingProposals ? "Loading..." : "View Proposals"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowProposals(false)}
+                    className="px-5 py-2.5 rounded-xl bg-[var(--color-muted)] text-[var(--color-text-secondary)] text-sm font-medium hover:bg-[var(--color-border)] transition-colors"
+                  >
+                    Hide Proposals
+                  </button>
+                )}
+              </div>
+
+              {showProposals && (
+                <div className="space-y-4">
+                  {proposals.map((proposal) => {
+                    const isUpdating = updatingProposal === proposal._id;
+                    return (
                       <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "start",
-                          marginBottom: "16px",
-                        }}
+                        key={proposal._id}
+                        className="rounded-xl bg-[var(--color-muted)] border border-[var(--color-border)] p-6"
                       >
-                        <div>
-                          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px" }}>
-                            {proposal.freelancerId.name}
-                          </h3>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: "14px",
-                              color: "#666",
-                            }}
+                        {/* Proposal Header */}
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                          <div>
+                            <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
+                              {proposal.freelancerId.name}
+                            </h3>
+                            <p className="text-sm text-[var(--color-text-secondary)]">
+                              {proposal.freelancerId.email}
+                            </p>
+                            <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                              Submitted on {formatDate(proposal.createdAt)}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${getStatusClasses(proposal.status)}`}
                           >
-                            {proposal.freelancerId.email}
-                          </p>
-                          <p
-                            style={{
-                              margin: "4px 0 0 0",
-                              fontSize: "12px",
-                              color: "#999",
-                            }}
-                          >
-                            Submitted on {formatDate(proposal.createdAt)}
-                          </p>
+                            {proposal.status}
+                          </span>
                         </div>
-                        <span
-                          style={{
-                            padding: "6px 16px",
-                            backgroundColor: statusStyle.bg,
-                            color: statusStyle.color,
-                            border: `1px solid ${statusStyle.border}`,
-                            borderRadius: "16px",
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          {proposal.status}
-                        </span>
-                      </div>
 
-                      {/* Proposal Details Grid */}
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(200px, 1fr))",
-                          gap: "16px",
-                          marginBottom: "16px",
-                        }}
-                      >
-                        <div>
-                          <p
-                            style={{
-                              margin: "0 0 4px 0",
-                              fontSize: "12px",
-                              color: "#666",
-                              fontWeight: "500",
-                            }}
-                          >
-                            Proposed Budget
+                        {/* Proposal Details Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                          <div className="p-3 rounded-lg bg-[var(--color-card)]">
+                            <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-0.5">
+                              Proposed Budget
+                            </p>
+                            <p className="text-sm font-bold text-[var(--color-text-primary)]">
+                              ${proposal.proposedBudget.min} - ${proposal.proposedBudget.max}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[var(--color-card)]">
+                            <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-0.5">
+                              Estimated Time
+                            </p>
+                            <p className="text-sm font-bold text-[var(--color-text-primary)]">
+                              {formatEstimatedTime(proposal.estimatedTime)}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[var(--color-card)]">
+                            <p className="text-xs font-medium text-[var(--color-text-tertiary)] mb-0.5">
+                              Availability
+                            </p>
+                            <p className="text-sm font-bold text-[var(--color-text-primary)]">
+                              {formatAvailability(proposal.availability)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Cover Letter */}
+                        <div className="mb-4">
+                          <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
+                            Cover Letter
                           </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: "16px",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            ${proposal.proposedBudget.min} - $
-                            {proposal.proposedBudget.max}
+                          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
+                            {proposal.coverLetter}
                           </p>
                         </div>
 
-                        <div>
-                          <p
-                            style={{
-                              margin: "0 0 4px 0",
-                              fontSize: "12px",
-                              color: "#666",
-                              fontWeight: "500",
-                            }}
-                          >
-                            Estimated Time
-                          </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: "16px",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {formatEstimatedTime(proposal.estimatedTime)}
-                          </p>
-                        </div>
-
-                        <div>
-                          <p
-                            style={{
-                              margin: "0 0 4px 0",
-                              fontSize: "12px",
-                              color: "#666",
-                              fontWeight: "500",
-                            }}
-                          >
-                            Availability
-                          </p>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: "16px",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {formatAvailability(proposal.availability)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Cover Letter */}
-                      <div style={{ marginBottom: "16px" }}>
-                        <p
-                          style={{
-                            margin: "0 0 8px 0",
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          Cover Letter
-                        </p>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: "14px",
-                            lineHeight: "1.6",
-                            color: "#333",
-                            whiteSpace: "pre-wrap",
-                          }}
-                        >
-                          {proposal.coverLetter}
-                        </p>
-                      </div>
-
-                      {/* Attachments */}
-                      {proposal.attachments &&
-                        proposal.attachments.length > 0 && (
-                          <div style={{ marginBottom: "16px" }}>
-                            <p
-                              style={{
-                                margin: "0 0 8px 0",
-                                fontSize: "14px",
-                                fontWeight: "bold",
-                              }}
-                            >
+                        {/* Attachments */}
+                        {proposal.attachments && proposal.attachments.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
                               Attachments
                             </p>
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "12px",
-                              }}
-                            >
+                            <div className="space-y-3">
                               {proposal.attachments.map((attachment, index) => {
                                 const fileName =
                                   attachment.split("/").pop() ||
@@ -784,15 +545,9 @@ export default function JobDetail() {
                                   .pop()
                                   ?.toLowerCase();
                                 const isImage = [
-                                  "jpg",
-                                  "jpeg",
-                                  "png",
-                                  "gif",
-                                  "webp",
-                                  "svg",
+                                  "jpg", "jpeg", "png", "gif", "webp", "svg",
                                 ].includes(fileExtension || "");
 
-                                // Ensure the attachment URL is absolute
                                 const fileUrl = attachment.startsWith("http")
                                   ? attachment
                                   : `http://localhost:3001${
@@ -801,84 +556,38 @@ export default function JobDetail() {
 
                                 return (
                                   <div key={index}>
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        gap: "8px",
-                                        alignItems: "center",
-                                      }}
-                                    >
+                                    <div className="flex gap-2 items-center">
                                       <a
                                         href={fileUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        style={{
-                                          padding: "8px 12px",
-                                          backgroundColor: "#007bff",
-                                          color: "white",
-                                          textDecoration: "none",
-                                          borderRadius: "4px",
-                                          fontSize: "13px",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "6px",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.backgroundColor =
-                                            "#0056b3";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.backgroundColor =
-                                            "#007bff";
-                                        }}
+                                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--color-primary)] text-white text-xs font-medium hover:bg-[var(--color-primary-hover)] transition-colors"
                                       >
-                                        <span>📎</span>
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                                        </svg>
                                         {fileName}
                                       </a>
                                       <a
                                         href={fileUrl}
                                         download={fileName}
-                                        style={{
-                                          padding: "8px 12px",
-                                          backgroundColor: "#28a745",
-                                          color: "white",
-                                          textDecoration: "none",
-                                          borderRadius: "4px",
-                                          fontSize: "13px",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "6px",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.backgroundColor =
-                                            "#218838";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.backgroundColor =
-                                            "#28a745";
-                                        }}
+                                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--color-success)] text-white text-xs font-medium hover:bg-[var(--color-success-hover)] transition-colors"
                                       >
-                                        <span>⬇</span>
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                        </svg>
                                         Download
                                       </a>
                                     </div>
                                     {isImage && (
-                                      <div style={{ marginTop: "8px" }}>
-                                        <img
-                                          src={fileUrl}
-                                          alt={fileName}
-                                          style={{
-                                            maxWidth: "100%",
-                                            maxHeight: "300px",
-                                            borderRadius: "4px",
-                                            border: "1px solid #dee2e6",
-                                          }}
-                                          onError={(e) => {
-                                            e.currentTarget.style.display =
-                                              "none";
-                                          }}
-                                        />
-                                      </div>
+                                      <img
+                                        src={fileUrl}
+                                        alt={fileName}
+                                        className="mt-2 max-w-full max-h-[300px] rounded-lg border border-[var(--color-border)]"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = "none";
+                                        }}
+                                      />
                                     )}
                                   </div>
                                 );
@@ -887,220 +596,142 @@ export default function JobDetail() {
                           </div>
                         )}
 
-                      {/* Action Buttons */}
-                      {proposal.status === "pending" && (
-                        <div style={{ display: "flex", gap: "12px" }}>
-                          <button
-                            onClick={() =>
-                              handleProposalStatusUpdate(
-                                proposal._id,
-                                "accepted"
-                              )
-                            }
-                            disabled={isUpdating}
-                            style={{
-                              padding: "8px 16px",
-                              backgroundColor: "#28a745",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: isUpdating ? "not-allowed" : "pointer",
-                              fontSize: "14px",
-                              fontWeight: "500",
-                              opacity: isUpdating ? 0.6 : 1,
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isUpdating) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#218838";
+                        {/* Action Buttons - Pending */}
+                        {proposal.status === "pending" && (
+                          <div className="flex gap-3 pt-4 border-t border-[var(--color-border)]">
+                            <button
+                              onClick={() =>
+                                handleProposalStatusUpdate(proposal._id, "accepted")
                               }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isUpdating) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#28a745";
-                              }
-                            }}
-                          >
-                            {isUpdating ? "Updating..." : "Accept"}
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleProposalStatusUpdate(
-                                proposal._id,
-                                "rejected"
-                              )
-                            }
-                            disabled={isUpdating}
-                            style={{
-                              padding: "8px 16px",
-                              backgroundColor: "#dc3545",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: isUpdating ? "not-allowed" : "pointer",
-                              fontSize: "14px",
-                              fontWeight: "500",
-                              opacity: isUpdating ? 0.6 : 1,
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isUpdating) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#c82333";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isUpdating) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#dc3545";
-                              }
-                            }}
-                          >
-                            {isUpdating ? "Updating..." : "Reject"}
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Chat Button for Accepted Proposals */}
-                      {proposal.status === "accepted" && (
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "8px",
-                          }}
-                        >
-                          <button
-                            onClick={() => handleOpenChat(proposal._id)}
-                            disabled={loadingChat === proposal._id}
-                            style={{
-                              padding: "10px 20px",
-                              backgroundColor: "#17a2b8",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor:
-                                loadingChat === proposal._id
-                                  ? "not-allowed"
-                                  : "pointer",
-                              fontSize: "14px",
-                              fontWeight: "500",
-                              opacity: loadingChat === proposal._id ? 0.6 : 1,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              width: "fit-content",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (loadingChat !== proposal._id) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#138496";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (loadingChat !== proposal._id) {
-                                e.currentTarget.style.backgroundColor =
-                                  "#17a2b8";
-                              }
-                            }}
-                          >
-                            <span>💬</span>
-                            {loadingChat === proposal._id
-                              ? "Opening Chat..."
-                              : "Open Chat"}
-                          </button>
-                          {chatError && loadingChat === null && (
-                            <p
-                              style={{
-                                margin: 0,
-                                fontSize: "13px",
-                                color: "#dc3545",
-                                padding: "8px 12px",
-                                backgroundColor: "#f8d7da",
-                                borderRadius: "4px",
-                                border: "1px solid #f5c6cb",
-                              }}
+                              disabled={isUpdating}
+                              className="px-5 py-2.5 rounded-xl bg-[var(--color-success)] text-white text-sm font-medium hover:bg-[var(--color-success-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                              {chatError}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                              {isUpdating ? "Updating..." : "Accept"}
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleProposalStatusUpdate(proposal._id, "rejected")
+                              }
+                              disabled={isUpdating}
+                              className="px-5 py-2.5 rounded-xl bg-[var(--color-error)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {isUpdating ? "Updating..." : "Reject"}
+                            </button>
+                          </div>
+                        )}
 
-        {/* Edit and Delete Buttons */}
-        {job.status === "open" && (
+                        {/* Chat Button - Accepted */}
+                        {proposal.status === "accepted" && (
+                          <div className="pt-4 border-t border-[var(--color-border)]">
+                            <button
+                              onClick={() => handleOpenChat(proposal._id)}
+                              disabled={loadingChat === proposal._id}
+                              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+                              </svg>
+                              {loadingChat === proposal._id
+                                ? "Opening Chat..."
+                                : "Open Chat"}
+                            </button>
+                            {chatError && loadingChat === null && (
+                              <p className="mt-2 text-sm text-[var(--color-error)] p-3 rounded-lg bg-[var(--color-error)]/10">
+                                {chatError}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Edit and Delete Buttons */}
+          {job.status === "open" && (
+            <div className="flex gap-3 pt-6 border-t border-[var(--color-border)]">
+              <button
+                onClick={() => navigate(`/edit-job/${job._id}`)}
+                className="px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-hover)] transition-all shadow-sm hover:shadow-md hover:shadow-indigo-500/25"
+              >
+                Edit Job
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-6 py-3 rounded-xl bg-[var(--color-error)] text-white font-semibold hover:opacity-90 transition-all"
+              >
+                Delete Job
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Last Updated */}
+        <p className="mt-4 text-xs text-[var(--color-text-tertiary)]">
+          Last updated: {formatDate(job.updatedAt)}
+        </p>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          onClick={() => !deleting && setShowDeleteModal(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+
+          {/* Modal */}
           <div
-            style={{
-              marginTop: "30px",
-              paddingTop: "20px",
-              borderTop: "1px solid #ddd",
-              display: "flex",
-              gap: "12px",
-            }}
+            className="relative w-full max-w-sm mx-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-border)] p-8 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => navigate(`/edit-job/${job._id}`)}
-              style={{
-                padding: "12px 32px",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#0056b3";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#007bff";
-              }}
-            >
-              Edit Job
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              style={{
-                padding: "12px 32px",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                cursor: deleting ? "not-allowed" : "pointer",
-                opacity: deleting ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => {
-                if (!deleting) {
-                  e.currentTarget.style.backgroundColor = "#c82333";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!deleting) {
-                  e.currentTarget.style.backgroundColor = "#dc3545";
-                }
-              }}
-            >
-              {deleting ? "Deleting..." : "Delete Job"}
-            </button>
-          </div>
-        )}
-      </div>
+            {/* Icon */}
+            <div className="mx-auto mb-5 w-14 h-14 rounded-2xl bg-[var(--color-error)]/10 flex items-center justify-center">
+              <svg
+                className="w-7 h-7 text-[var(--color-error)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                />
+              </svg>
+            </div>
 
-      {/* Additional Info */}
-      <div style={{ marginTop: "16px", fontSize: "12px", color: "#666" }}>
-        <p>Last updated: {formatDate(job.updatedAt)}</p>
-      </div>
+            <h2 className="text-xl font-semibold text-[var(--color-text-primary)] text-center">
+              Delete this job?
+            </h2>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)] text-center">
+              This action cannot be undone. All proposals associated with this job will also be removed.
+            </p>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 rounded-xl bg-[var(--color-muted)] text-[var(--color-text-primary)] font-medium hover:bg-[var(--color-border)] transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 rounded-xl bg-[var(--color-error)] text-white font-medium hover:opacity-90 transition-all disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
