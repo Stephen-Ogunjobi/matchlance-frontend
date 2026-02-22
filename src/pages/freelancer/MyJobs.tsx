@@ -38,7 +38,6 @@ export default function MyJobs() {
         setJobs(response.data.jobs);
         setError(null);
       } catch (err: any) {
-        console.error("Error fetching my jobs:", err);
         setError(err.response?.data?.message || "Failed to fetch jobs");
       } finally {
         setLoading(false);
@@ -63,7 +62,6 @@ export default function MyJobs() {
         setChatError("Conversation not found");
       }
     } catch (err: any) {
-      console.error("Error fetching chat:", err);
       if (err.response?.status === 404) {
         setChatError("No conversation found for this proposal");
       } else {

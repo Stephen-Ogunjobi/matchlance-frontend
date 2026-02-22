@@ -9,17 +9,11 @@ export const initializeSocketConnection = () => {
   });
 
   // Connection events
-  socket.on("connect", () => {
-    console.log("Connected to chat server");
-  });
+  socket.on("connect", () => {});
 
-  socket.on("disconnect", () => {
-    console.log("Disconnected from chat server");
-  });
+  socket.on("disconnect", () => {});
 
-  socket.on("error", (error) => {
-    console.error("Socket error:", error);
-  });
+  socket.on("error", () => {});
 
   return socket;
 };

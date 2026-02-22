@@ -88,7 +88,6 @@ export default function EditJob() {
         estimatedHours: job.duration.estimatedHours?.toString() || "",
       });
     } catch (err: any) {
-      console.error("Error fetching job:", err);
       setError(
         err.response?.data?.message || "Failed to load job. Please try again."
       );
@@ -210,7 +209,6 @@ export default function EditJob() {
       await apiClient.patch(`/job/${jobId}`, jobData);
       navigate(`/jobs/${jobId}`);
     } catch (err: any) {
-      console.error("Error updating job:", err);
       setError(
         err.response?.data?.message || "Failed to update job. Please try again."
       );

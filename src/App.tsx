@@ -78,7 +78,6 @@ function AppContent() {
         if (err.response?.status === 404) {
           setHasFreelancerProfile(false);
         } else {
-          console.error("Error checking freelancer profile:", err);
           setHasFreelancerProfile(false);
         }
       }

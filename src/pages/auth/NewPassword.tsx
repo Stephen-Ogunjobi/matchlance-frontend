@@ -39,7 +39,6 @@ export default function NewPassword() {
         newPassword,
         confirmPassword,
       });
-      console.log("new password response", res.data);
       setSuccess(true);
 
       // Redirect to login after 2 seconds
@@ -47,7 +46,6 @@ export default function NewPassword() {
         navigate("/login");
       }, 2000);
     } catch (err: any) {
-      console.error(err);
       setError(
         err?.response?.data?.message || err.message || "Password reset failed"
       );

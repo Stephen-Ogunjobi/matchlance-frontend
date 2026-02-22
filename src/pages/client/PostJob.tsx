@@ -176,7 +176,6 @@ export default function PostJob() {
       await apiClient.post("/job/post-job", jobData);
       navigate("/");
     } catch (err: any) {
-      console.error("Error posting job:", err);
       setError(
         err.response?.data?.message || "Failed to post job. Please try again."
       );

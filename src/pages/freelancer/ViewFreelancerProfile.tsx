@@ -69,7 +69,6 @@ export default function ViewFreelancerProfile() {
           setProfile(response.data.freelancerProfile);
         }
       } catch (err: any) {
-        console.error("Error fetching profile:", err);
         setError(
           err.response?.data?.message || "Failed to load freelancer profile"
         );

@@ -15,14 +15,12 @@ export default function ResetPassword() {
     setSuccess(false);
 
     try {
-      const res = await apiClient.post("/auth/reset-password", {
+      await apiClient.post("/auth/reset-password", {
         email,
       });
-      console.log("reset password response", res.data);
       setSuccess(true);
       setEmail("");
     } catch (err: any) {
-      console.error(err);
       setError(
         err?.response?.data?.message ||
           err.message ||

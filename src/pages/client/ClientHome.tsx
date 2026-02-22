@@ -21,7 +21,6 @@ export default function ClientHome() {
         const response = await apiClient.get("/job/jobs");
         setJobPosts(response.data.userJobs);
       } catch (err: any) {
-        console.error("Error fetching job posts:", err);
         setJobPosts([]);
       } finally {
         setFetchingJobs(false);

@@ -205,7 +205,6 @@ export default function ProposalForm({
 
       onSuccess();
     } catch (err: any) {
-      console.error("Error submitting proposal:", err);
       onError(
         err.response?.data?.message ||
           "Failed to submit proposal. Please try again."

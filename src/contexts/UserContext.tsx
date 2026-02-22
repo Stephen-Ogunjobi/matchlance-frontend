@@ -31,7 +31,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.get("/auth/me");
       setUser(response.data.user);
     } catch (err: any) {
-      console.error("Error fetching user:", err);
       setUser(null);
     } finally {
       setLoading(false);

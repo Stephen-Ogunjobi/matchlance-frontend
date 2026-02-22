@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import apiClient from "../../utils/api";
 
@@ -16,8 +16,6 @@ export default function AuthCallback() {
         try {
           const res = await apiClient.get("/auth/verify");
 
-          console.log("User verified:", res.data);
-
           // Store user data in localStorage
           if (res.data.user) {
             localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -26,7 +24,6 @@ export default function AuthCallback() {
           // Redirect to home
           navigate("/");
         } catch (err: any) {
-          console.error("Verification failed:", err);
           setError("Authentication verification failed. Please try logging in.");
 
           // Redirect to login after 3 seconds

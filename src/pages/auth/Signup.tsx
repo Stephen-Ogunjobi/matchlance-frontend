@@ -27,12 +27,9 @@ export default function Signup() {
         password,
         role,
       });
-      console.log("signup response", res.data);
-
       // Show success message instead of redirecting
       setSuccess(true);
     } catch (err: any) {
-      console.error(err);
       setError(err?.response?.data?.message || err.message || "Signup failed");
     } finally {
       setLoading(false);

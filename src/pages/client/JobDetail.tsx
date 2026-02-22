@@ -80,7 +80,6 @@ export default function JobDetail() {
       const response = await apiClient.get(`job/${jobId}`);
       setJob(response.data.job);
     } catch (err: any) {
-      console.error("Error fetching job details:", err);
       setError(
         err.response?.data?.message ||
           "Failed to load job details. Please try again."
@@ -134,7 +133,6 @@ export default function JobDetail() {
       setProposals(fetchedProposals);
       setShowProposals(true);
     } catch (err: any) {
-      console.error("Error fetching proposals:", err);
       setError(
         err.response?.data?.error ||
           "Failed to load proposals. Please try again."
@@ -166,7 +164,6 @@ export default function JobDetail() {
 
       await fetchJobDetail();
     } catch (err: any) {
-      console.error("Error updating proposal:", err);
       setError(
         err.response?.data?.error ||
           `Failed to ${
@@ -187,7 +184,6 @@ export default function JobDetail() {
       setShowDeleteModal(false);
       navigate("/jobs");
     } catch (err: any) {
-      console.error("Error deleting job:", err);
       setError(
         err.response?.data?.message || "Failed to delete job. Please try again."
       );
@@ -210,7 +206,6 @@ export default function JobDetail() {
         setChatError("Chat not found. Please try again later.");
       }
     } catch (err: any) {
-      console.error("Error opening chat:", err);
       if (err.response?.status === 404) {
         setChatError(
           "Chat not available yet. The conversation may not have been created."

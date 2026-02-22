@@ -79,7 +79,6 @@ export default function Contract() {
         setError(null);
       }
     } catch (err: any) {
-      console.error("Error fetching contract:", err);
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||

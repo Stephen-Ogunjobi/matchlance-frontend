@@ -30,7 +30,6 @@ export default function VerifyEmail() {
           navigate("/");
         }, 2000);
       } catch (err: any) {
-        console.error("Verification error:", err);
         setStatus("error");
         setMessage(
           err?.response?.data?.error ||

@@ -50,7 +50,6 @@ export default function MyProposals() {
       const response = await apiClient.get(`/proposal/my-proposals`);
       setProposals(response.data.proposals || []);
     } catch (err: any) {
-      console.error("Error fetching proposals:", err);
       setError(
         err.response?.data?.error ||
           "Failed to load proposals. Please try again."

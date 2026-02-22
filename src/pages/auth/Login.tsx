@@ -16,15 +16,13 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiClient.post("/auth/login", {
+      await apiClient.post("/auth/login", {
         email,
         password,
       });
-      console.log("login response", res.data);
       await refreshUser();
       navigate("/");
     } catch (err: any) {
-      console.error(err);
       setError(err?.response?.data?.message || err.message || "Login failed");
     } finally {
       setLoading(false);

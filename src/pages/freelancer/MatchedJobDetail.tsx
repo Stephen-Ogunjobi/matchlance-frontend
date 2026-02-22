@@ -52,7 +52,6 @@ export default function MatchedJobDetail() {
       const response = await apiClient.get(`/job/${jobId}`);
       setJob(response.data.job);
     } catch (err: any) {
-      console.error("Error fetching job details:", err);
       setError(
         err.response?.data?.message ||
           "Failed to load job details. Please try again."

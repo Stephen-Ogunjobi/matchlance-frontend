@@ -30,7 +30,6 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
       setShowLogoutModal(false);
       navigate("/login");
     } catch (err: any) {
-      console.error("Logout error:", err);
       setShowLogoutModal(false);
       navigate("/login");
     } finally {

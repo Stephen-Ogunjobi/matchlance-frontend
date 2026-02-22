@@ -80,7 +80,6 @@ export default function Chat() {
 
     // Listen for new messages
     onNewMessage((data) => {
-      console.log("New message received:", data);
       // Add message only if it doesn't already exist (prevents duplicates)
       //prevMessage is provided by react and contains and contains cur val of messages state
       setMessages((prevMessages) => {
@@ -227,7 +226,6 @@ export default function Chat() {
         // navigate(`/contracts/${response.data.contractId}`);
       }
     } catch (err: any) {
-      console.error("Error hiring freelancer:", err);
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
@@ -251,7 +249,6 @@ export default function Chat() {
         setError(null);
       }
     } catch (err: any) {
-      console.error("Error fetching messages:", err);
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
@@ -289,7 +286,6 @@ export default function Chat() {
         sendTypingIndicator(conversationId, false);
       }
     } catch (err: any) {
-      console.error("Error sending message:", err);
       setError(err.response?.data?.message || "Failed to send message");
     } finally {
       setSending(false);

@@ -120,7 +120,6 @@ export default function FreelancerProfile() {
         if (err.response?.status === 404) {
           setProfileExists(false);
         } else {
-          console.error("Error fetching profile:", err);
         }
       }
     };
@@ -250,7 +249,6 @@ export default function FreelancerProfile() {
         }));
       }
     } catch (err: any) {
-      console.error("Error uploading profile picture:", err);
       setPictureError(
         err.response?.data?.message ||
           "Failed to upload profile picture. Please try again.",
@@ -350,7 +348,6 @@ export default function FreelancerProfile() {
       }
       navigate("/");
     } catch (err: any) {
-      console.error("Error saving profile:", err);
       setError(
         err.response?.data?.message ||
           "Failed to save profile. Please try again.",
@@ -434,10 +431,6 @@ export default function FreelancerProfile() {
                   alt="Profile"
                   className="w-32 h-32 rounded-full object-cover border-4 border-[var(--color-primary)]/20 shadow-lg shadow-[var(--color-primary)]/10"
                   onError={(e) => {
-                    console.error(
-                      "Image failed to load:",
-                      formData.profilePicture,
-                    );
                     e.currentTarget.style.display = "none";
                   }}
                 />

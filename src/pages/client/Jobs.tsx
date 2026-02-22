@@ -37,7 +37,6 @@ export default function Jobs() {
       const response = await apiClient.get("/job/jobs");
       setJobs(response.data.userJobs);
     } catch (err: any) {
-      console.error("Error fetching jobs:", err);
       setError(
         err.response?.data?.message || "Failed to load jobs. Please try again."
       );

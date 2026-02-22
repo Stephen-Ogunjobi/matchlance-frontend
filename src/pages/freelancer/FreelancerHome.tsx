@@ -42,7 +42,6 @@ export default function FreelancerHome() {
         if (err.response?.status === 404) {
           setHasFreelancerProfile(false);
         } else {
-          console.error("Error checking freelancer profile:", err);
           setHasFreelancerProfile(false);
         }
       } finally {
@@ -68,7 +67,6 @@ export default function FreelancerHome() {
         );
         setMatchedJobs(response.data.jobs);
       } catch (err: any) {
-        console.error("Error fetching matched jobs:", err);
         setMatchedJobs([]);
       } finally {
         setFetchingMatchedJobs(false);

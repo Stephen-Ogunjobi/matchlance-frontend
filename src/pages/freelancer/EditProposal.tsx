@@ -100,7 +100,6 @@ export default function EditProposal() {
         attachments: [],
       });
     } catch (err: any) {
-      console.error("Error fetching proposal:", err);
       setError(
         err.response?.data?.error ||
           "Failed to load proposal. Please try again."
@@ -303,7 +302,6 @@ export default function EditProposal() {
         navigate("/my-proposals");
       }, 2000);
     } catch (err: any) {
-      console.error("Error updating proposal:", err);
       setError(
         err.response?.data?.error ||
           "Failed to update proposal. Please try again."
