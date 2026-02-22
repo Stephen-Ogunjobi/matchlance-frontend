@@ -35,6 +35,7 @@ import MyJobs from "./pages/freelancer/MyJobs";
 
 // Components
 import Contract from "./components/Contract";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Navbar from "./components/Navbar";
 import { UserProvider, useUser } from "./contexts/UserContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -125,7 +126,9 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <UserProvider>
-          <AppContent />
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
         </UserProvider>
       </ThemeProvider>
     </BrowserRouter>
