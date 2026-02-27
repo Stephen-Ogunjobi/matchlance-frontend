@@ -20,22 +20,43 @@ interface Job {
   proposals?: string[];
 }
 
+interface ClientProfile {
+  profileCompleteness: number;
+}
+
 export default function ClientHome() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [fetchingJobs, setFetchingJobs] = useState(false);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
   const { user, loading: userLoading } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!userLoading) {
-      setFetchingJobs(true);
-      apiClient
-        .get("/job/jobs")
-        .then((res) => setJobs(res.data.userJobs ?? []))
-        .catch(() => setJobs([]))
-        .finally(() => setFetchingJobs(false));
-    }
-  }, [userLoading]);
+    if (userLoading || !user?._id) return;
+
+    // Fetch client profile to check completeness
+    apiClient
+      .get(`/client/profile/${user._id}`)
+      .then((res) => {
+        const profile: ClientProfile =
+          res.data.clientProfile ?? res.data;
+        if (!profile || profile.profileCompleteness < 100) {
+          setProfileIncomplete(true);
+        }
+      })
+      .catch(() => {
+        // 404 or any error → profile missing
+        setProfileIncomplete(true);
+      });
+
+    // Fetch jobs
+    setFetchingJobs(true);
+    apiClient
+      .get("/job/jobs")
+      .then((res) => setJobs(res.data.userJobs ?? []))
+      .catch(() => setJobs([]))
+      .finally(() => setFetchingJobs(false));
+  }, [userLoading, user?._id]);
 
   const formatBudget = (budget: Budget) => {
     if (budget.type === "fixed") return `$${budget.amount?.toLocaleString()}`;
@@ -87,6 +108,42 @@ export default function ClientHome() {
             Here's what's happening with your jobs
           </p>
         </div>
+
+        {/* Incomplete profile banner */}
+        {profileIncomplete && (
+          <div className="mb-8 flex items-start gap-4 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-5 py-4">
+            <div className="mt-0.5 w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+              <svg
+                className="w-5 h-5 text-amber-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                Complete your profile
+              </p>
+              <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
+                A complete profile helps freelancers trust you and increases
+                your chances of finding great talent.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate(`/client-profile/${user!._id}`)}
+              className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+            >
+              Complete profile
+            </button>
+          </div>
+        )}
 
         {fetchingJobs ? (
           <div className="grid gap-4 md:grid-cols-3 mb-10">

@@ -24,6 +24,7 @@ import PostJob from "./pages/client/PostJob";
 import Jobs from "./pages/client/Jobs";
 import JobDetail from "./pages/client/JobDetail";
 import EditJob from "./pages/client/EditJob";
+import ViewClientProfile from "./pages/client/ViewClientProfile";
 
 // Freelancer pages
 import FreelancerProfile from "./pages/freelancer/FreelancerProfile";
@@ -114,6 +115,7 @@ function AppContent() {
         <Route path="/my-proposals" element={<MyProposals />} />
         <Route path="/edit-proposal/:proposalId" element={<EditProposal />} />
         <Route path="/my-jobs" element={<MyJobs />} />
+        <Route path="/client-profile/:clientId" element={<ViewClientProfile />} />
         <Route path="/chat/:conversationId" element={<Chat />} />
         <Route path="/contract/:contractId" element={<Contract />} />
       </Routes>

@@ -95,7 +95,7 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
         ) : (
           <>
             <NavLink
-              to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : "/"}
+              to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : !isFreelancer ? `/client-profile/${user._id}` : "/"}
               className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
             >
               {user.firstName || user.email}
