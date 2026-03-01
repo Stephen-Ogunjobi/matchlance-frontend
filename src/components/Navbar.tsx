@@ -18,6 +18,7 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
 export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { user, setUser, isFreelancer } = useUser();
   const navigate = useNavigate();
   const isLoggedIn = !!user;
@@ -37,79 +38,166 @@ export default function Navbar({ hasFreelancerProfile }: NavbarProps) {
     }
   };
 
+  const mobileLinkClasses = ({ isActive }: { isActive: boolean }) =>
+    `block px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+      isActive
+        ? "bg-indigo-500/10 text-indigo-500"
+        : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border)]"
+    }`;
+
   return (
     <>
-    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)] relative">
-      {/* Logo */}
-      <NavLink
-        to="/"
-        className="flex items-center gap-2"
-      >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
-          <span className="text-white font-bold text-lg">M</span>
-        </div>
-        <span className="font-bold text-lg text-[var(--color-text-primary)] hidden sm:block">
-          MatchLance
-        </span>
-      </NavLink>
-
-      {/* Navigation Links - Centered */}
-      <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
-        <NavLink to="/" className={linkClasses} end>
-          Home
+    <header className="sticky top-0 z-50 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-6 py-4 relative">
+        {/* Logo */}
+        <NavLink to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
+            <span className="text-white font-bold text-lg">M</span>
+          </div>
+          <span className="font-bold text-lg text-[var(--color-text-primary)] hidden sm:block">
+            MatchLance
+          </span>
         </NavLink>
-        {!isFreelancer && (
-          <NavLink to="/jobs" className={linkClasses}>
-            Jobs
-          </NavLink>
-        )}
-        {isFreelancer && hasFreelancerProfile && user?._id && (
-          <>
-            <NavLink to="/my-proposals" className={linkClasses}>
-              My Proposals
-            </NavLink>
-            <NavLink to="/my-jobs" className={linkClasses}>
-              My Jobs
-            </NavLink>
-          </>
-        )}
-      </nav>
 
-      {/* Right side actions */}
-      <div className="flex items-center gap-3">
-        {!isLoggedIn ? (
-          <>
-            <NavLink
-              to="/login"
-              className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              Log in
+        {/* Navigation Links - Centered (desktop only) */}
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
+          <NavLink to="/" className={linkClasses} end>
+            Home
+          </NavLink>
+          {!isFreelancer && (
+            <NavLink to="/jobs" className={linkClasses}>
+              Jobs
             </NavLink>
-            <NavLink
-              to="/signup"
-              className="px-4 py-2 rounded-lg font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors text-sm"
-            >
-              Sign up
-            </NavLink>
-          </>
-        ) : (
-          <>
-            <NavLink
-              to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : !isFreelancer ? `/client-profile/${user._id}` : "/"}
-              className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              {user.firstName || user.email}
-            </NavLink>
-            <button
-              onClick={() => setShowLogoutModal(true)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
-            >
-              Logout
-            </button>
-          </>
-        )}
-        <ThemeToggle />
+          )}
+          {isFreelancer && hasFreelancerProfile && user?._id && (
+            <>
+              <NavLink to="/my-proposals" className={linkClasses}>
+                My Proposals
+              </NavLink>
+              <NavLink to="/my-jobs" className={linkClasses}>
+                My Jobs
+              </NavLink>
+            </>
+          )}
+        </nav>
+
+        {/* Right side actions (desktop) */}
+        <div className="hidden md:flex items-center gap-3">
+          {!isLoggedIn ? (
+            <>
+              <NavLink
+                to="/login"
+                className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+              >
+                Log in
+              </NavLink>
+              <NavLink
+                to="/signup"
+                className="px-4 py-2 rounded-lg font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors text-sm"
+              >
+                Sign up
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : !isFreelancer ? `/client-profile/${user._id}` : "/"}
+                className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+              >
+                {user.firstName || user.email}
+              </NavLink>
+              <button
+                onClick={() => setShowLogoutModal(true)}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          )}
+          <ThemeToggle />
+        </div>
+
+        {/* Mobile right: theme toggle + hamburger */}
+        <div className="flex md:hidden items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-border)] transition-colors"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-[var(--color-border)] px-4 py-3 flex flex-col gap-1">
+          <NavLink to="/" className={mobileLinkClasses} end onClick={() => setMenuOpen(false)}>
+            Home
+          </NavLink>
+          {!isFreelancer && (
+            <NavLink to="/jobs" className={mobileLinkClasses} onClick={() => setMenuOpen(false)}>
+              Jobs
+            </NavLink>
+          )}
+          {isFreelancer && hasFreelancerProfile && user?._id && (
+            <>
+              <NavLink to="/my-proposals" className={mobileLinkClasses} onClick={() => setMenuOpen(false)}>
+                My Proposals
+              </NavLink>
+              <NavLink to="/my-jobs" className={mobileLinkClasses} onClick={() => setMenuOpen(false)}>
+                My Jobs
+              </NavLink>
+            </>
+          )}
+
+          <div className="mt-2 pt-2 border-t border-[var(--color-border)] flex flex-col gap-1">
+            {!isLoggedIn ? (
+              <>
+                <NavLink
+                  to="/login"
+                  className={mobileLinkClasses}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Log in
+                </NavLink>
+                <NavLink
+                  to="/signup"
+                  className="block px-4 py-2.5 rounded-xl font-medium text-sm text-center bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Sign up
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to={isFreelancer && hasFreelancerProfile ? `/freelancer-profile/${user._id}` : !isFreelancer ? `/client-profile/${user._id}` : "/"}
+                  className={mobileLinkClasses}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {user.firstName || user.email}
+                </NavLink>
+                <button
+                  onClick={() => { setMenuOpen(false); setShowLogoutModal(true); }}
+                  className="text-left px-4 py-2.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
 
     {/* Logout Confirmation Modal */}
