@@ -87,7 +87,7 @@ export default function ClientHome() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+      <div className="min-h-screen bg-[var(--color-background)] px-4 sm:px-6 py-8 sm:py-12">
         <div className="max-w-5xl mx-auto animate-pulse space-y-4">
           <div className="h-10 bg-[var(--color-muted)] rounded-lg w-64" />
           <div className="h-5 bg-[var(--color-muted)] rounded w-96" />
@@ -97,7 +97,7 @@ export default function ClientHome() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] px-6 py-12">
+    <div className="min-h-screen bg-[var(--color-background)] px-4 sm:px-6 py-8 sm:py-12">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-10">
@@ -111,34 +111,36 @@ export default function ClientHome() {
 
         {/* Incomplete profile banner */}
         {profileIncomplete && (
-          <div className="mb-8 flex items-start gap-4 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-5 py-4">
-            <div className="mt-0.5 w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-              <svg
-                className="w-5 h-5 text-amber-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-                Complete your profile
-              </p>
-              <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
-                A complete profile helps freelancers trust you and increases
-                your chances of finding great talent.
-              </p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-5 py-4">
+            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="mt-0.5 w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+                <svg
+                  className="w-5 h-5 text-amber-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                  />
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                  Complete your profile
+                </p>
+                <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
+                  A complete profile helps freelancers trust you and increases
+                  your chances of finding great talent.
+                </p>
+              </div>
             </div>
             <button
               onClick={() => navigate(`/client-profile/${user!._id}`)}
-              className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+              className="sm:shrink-0 w-full sm:w-auto px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
             >
               Complete profile
             </button>
@@ -257,18 +259,36 @@ export default function ClientHome() {
                     <Link
                       key={job._id}
                       to={`/jobs/${job._id}`}
-                      className="flex items-center justify-between px-6 py-4 hover:bg-[var(--color-muted)] transition-colors first:rounded-t-2xl last:rounded-b-2xl group"
+                      className="flex items-start sm:items-center justify-between px-4 sm:px-6 py-4 hover:bg-[var(--color-muted)] transition-colors first:rounded-t-2xl last:rounded-b-2xl group gap-3"
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="font-medium text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-primary)] transition-colors">
                           {job.title}
                         </p>
-                        <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
-                          {formatBudget(job.budget)} · {formatDate(job.createdAt)}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            {formatBudget(job.budget)} · {formatDate(job.createdAt)}
+                          </p>
+                          {/* Status badge visible on mobile inline */}
+                          <span
+                            className={`sm:hidden px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                              job.status === "open"
+                                ? "bg-[var(--color-success)]/10 text-[var(--color-success)]"
+                                : "bg-[var(--color-error)]/10 text-[var(--color-error)]"
+                            }`}
+                          >
+                            {job.status}
+                          </span>
+                          {job.proposals !== undefined && (
+                            <span className="sm:hidden text-xs text-[var(--color-text-secondary)]">
+                              {job.proposals.length}{" "}
+                              {job.proposals.length === 1 ? "proposal" : "proposals"}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-4 shrink-0 ml-4">
+                      <div className="hidden sm:flex items-center gap-4 shrink-0">
                         {job.proposals !== undefined && (
                           <span className="text-sm font-medium text-[var(--color-text-secondary)]">
                             {job.proposals.length}{" "}
@@ -286,20 +306,20 @@ export default function ClientHome() {
                         >
                           {job.status}
                         </span>
-                        <svg
-                          className="w-4 h-4 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
                       </div>
+                      <svg
+                        className="w-4 h-4 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors shrink-0 mt-1 sm:mt-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
                     </Link>
                   ))}
                 </div>
