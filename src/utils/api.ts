@@ -4,7 +4,7 @@ const API_BASE_URL = "http://localhost:3001/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // This sends cookies with requests
+  withCredentials: true,
 });
 
 // Flag to prevent multiple simultaneous refresh attempts
@@ -94,7 +94,7 @@ apiClient.interceptors.response.use(
 
     // For other errors, just reject
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;
