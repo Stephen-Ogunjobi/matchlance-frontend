@@ -23,7 +23,15 @@ export default function Login() {
       await refreshUser();
       navigate("/");
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Login failed");
+      const status = err?.response?.status;
+      const serverMessage = err?.response?.data?.message || err?.response?.data?.error;
+      if (serverMessage) {
+        setError(serverMessage);
+      } else if (status === 401 || status === 400) {
+        setError("Incorrect email or password.");
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
