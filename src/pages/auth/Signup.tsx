@@ -10,6 +10,7 @@ export default function Signup() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -17,6 +18,10 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -29,7 +34,11 @@ export default function Signup() {
       });
       setSuccess(true);
     } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || "Signup failed");
+      if (err?.response?.status === 409) {
+        setError("An account with this email already exists. Try signing in instead.");
+      } else {
+        setError(err?.response?.data?.message || err.message || "Signup failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -242,6 +251,21 @@ export default function Signup() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="Create a strong password"
+                    className="w-full px-4 py-3 bg-[var(--color-input)] border border-[var(--color-input-border)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                    Confirm password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    placeholder="Repeat your password"
                     className="w-full px-4 py-3 bg-[var(--color-input)] border border-[var(--color-input-border)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
                   />
                 </div>
