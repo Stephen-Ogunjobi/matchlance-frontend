@@ -186,12 +186,13 @@ export default function FreelancerProfile() {
       if (profileExists) {
         await apiClient.patch(`/freelancer/profile/${userId}`, profileData);
       } else {
-        await apiClient.post("/freelancer/profile", profileData);
+        await apiClient.post(`/freelancer/profile/${userId}`, profileData);
       }
       navigate("/");
     } catch (err: any) {
+      const data = err.response?.data;
       setError(
-        err.response?.data?.message ||
+        data?.details || data?.message || data?.error ||
           "Failed to save profile. Please try again.",
       );
     } finally {
