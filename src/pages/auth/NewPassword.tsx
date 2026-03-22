@@ -34,7 +34,7 @@ export default function NewPassword() {
     setLoading(true);
 
     try {
-      const res = await apiClient.post("/auth/new-password", {
+      await apiClient.post("/auth/new-password", {
         token,
         newPassword,
         confirmPassword,
